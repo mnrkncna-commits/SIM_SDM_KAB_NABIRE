@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Informasi SDMK Kab. Nabire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Pustaka pendukung untuk Unduhan Excel & PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#0d9488', // Teal 600
+                        secondary: '#0f766e', // Teal 700
+                        accent: '#ccfbf1', // Teal 50
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .menu-item.active { background-color: #ccfbf1; color: #0d9488; border-right: 4px solid #0d9488; font-weight: 600;}
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-72 bg-white shadow-xl flex flex-col h-full z-40 flex-shrink-0 hidden md:flex">
+        <div class="p-6 border-b border-gray-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-notes-medical text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight text-gray-900">SIM SDMK</h1>
+                <p class="text-xs text-gray-500 font-medium">KAB. NABIRE</p>
+            </div>
+        </div>
+
+        <div class="px-6 py-4 border-b border-gray-100 bg-teal-50/50">
+            <label class="block text-xs font-bold text-teal-800 mb-1"><i class="fa-solid fa-calendar-alt mr-1"></i> Tahun Data Aktif</label>
+            <select id="global-year-sidebar" onchange="changeGlobalYear(this.value)" class="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none font-bold text-teal-900 text-sm shadow-sm">
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+            </select>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 space-y-1 mt-2">
+            <button onclick="navigate('dashboard')" id="nav-dashboard" class="menu-item active w-full text-left px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+            </button>
+            <button onclick="navigate('pegawai')" id="nav-pegawai" class="menu-item w-full text-left px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3">
+                <i class="fa-solid fa-users-medical w-5 text-center"></i> Data Pegawai
+            </button>
+            <button onclick="navigate('statistik')" id="nav-statistik" class="menu-item w-full text-left px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3">
+                <i class="fa-solid fa-chart-simple w-5 text-center"></i> Statistik Tenaga
+            </button>
+            <button onclick="navigate('faskes')" id="nav-faskes" class="menu-item w-full text-left px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3">
+                <i class="fa-solid fa-hospital w-5 text-center"></i> Daftar Puskesmas
+            </button>
+            <button onclick="navigate('klinik')" id="nav-klinik" class="menu-item w-full text-left px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3">
+                <i class="fa-solid fa-notes-medical w-5 text-center"></i> Daftar Klinik & Apotek
+            </button>
+            <button onclick="navigate('notatugas')" id="nav-notatugas" class="menu-item w-full text-left px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors flex items-center gap-3 border-t border-gray-100 mt-2 pt-4">
+                <i class="fa-solid fa-file-signature w-5 text-center text-amber-600"></i> Buku Nota Tugas
+            </button>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-100 bg-teal-50/50">
+            <div class="flex items-center gap-2">
+                <span id="db-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="db-status-text" class="text-xs font-semibold text-gray-600">Menghubungkan Cloud...</span>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">Sinkronisasi Realtime Aktif</p>
+        </div>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto bg-slate-50 relative w-full">
+        
+        <header class="md:hidden bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+            <div class="flex items-center gap-2 text-primary font-bold">
+                <i class="fa-solid fa-notes-medical"></i> SIM SDMK Kab. Nabire
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="db-status-dot-mobile" class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute');" class="text-gray-600 p-2"><i class="fa-solid fa-bars"></i></button>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-section block animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">Dashboard Utama <span class="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 active-year-display">2026</span></h2>
+                        <p class="text-gray-500 mt-1">Ringkasan Data Sumber Daya Manusia Kesehatan Kab. Nabire (Pegawai Aktif).</p>
+                    </div>
+                    <button id="btn-download-summary" onclick="downloadDashboardPDF()" class="bg-primary hover:bg-secondary text-white px-5 py-2.5 rounded-lg font-medium shadow-md shadow-primary/30 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> Unduh Ringkasan (PDF)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl">
+                                <i class="fa-solid fa-user-doctor"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Pegawai Aktif</p>
+                                <h3 id="dash-total-pegawai" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 border-t pt-2 mt-2"><span id="dash-total-nonaktif-badge" class="font-bold text-red-500">0</span> Non-Aktif/Keluar</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 text-xl">
+                                <i class="fa-solid fa-house-chimney-medical"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Klinik & Apotek</p>
+                                <h3 id="dash-total-klinik" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 border-t pt-2 mt-2">Klinik, Spesialis & Apotek</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xl">
+                                <i class="fa-solid fa-hospital"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Total Faskes</p>
+                                <h3 id="dash-total-faskes" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 border-t pt-2 mt-2">Puskesmas & Rumah Sakit</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600 text-xl">
+                                <i class="fa-solid fa-leaf"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">OAP Aktif</p>
+                                <h3 id="dash-total-oap" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-gray-400 border-t pt-2 mt-2 flex justify-between">
+                            <span>L: <span id="dash-oap-l" class="font-semibold text-gray-700">0</span></span>
+                            <span>P: <span id="dash-oap-p" class="font-semibold text-gray-700">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 text-xl">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Non OAP Aktif</p>
+                                <h3 id="dash-total-nonoap" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-gray-400 border-t pt-2 mt-2 flex justify-between">
+                            <span>L: <span id="dash-nonoap-l" class="font-semibold text-gray-700">0</span></span>
+                            <span>P: <span id="dash-nonoap-p" class="font-semibold text-gray-700">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 text-xl">
+                                <i class="fa-solid fa-plane-arrival"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium">Mutasi Masuk</p>
+                                <h3 id="dash-total-mutasi" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 border-t pt-2 mt-2">Masuk dari Luar Daerah</p>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-800 mt-10 mb-4">Distribusi Status Kepegawaian (Pegawai Aktif)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-emerald-500 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">PNS/CPNS</span>
+                            <span id="dash-asn" class="text-lg font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-asn-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-asn-p">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-blue-500 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">PPPK</span>
+                            <span id="dash-pppk" class="text-lg font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-pppk-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-pppk-p">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-yellow-500 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">K2</span>
+                            <span id="dash-k2" class="text-lg font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-k2-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-k2-p">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-indigo-500 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">BLUD</span>
+                            <span id="dash-blud" class="text-lg font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-blud-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-blud-p">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-gray-500 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">Honorer</span>
+                            <span id="dash-nonasn" class="text-lg font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-nonasn-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-nonasn-p">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: DATA PEGAWAI -->
+            <div id="view-pegawai" class="view-section hidden animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">Data Pegawai (Nominatif) <span class="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 active-year-display">2026</span></h2>
+                        <p class="text-gray-500 mt-1">Daftar lengkap nominatif tenaga kesehatan dan penunjang.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button id="btn-download-all-pegawai" onclick="downloadAllPegawaiExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md shadow-emerald-600/30 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Unduh Excel
+                        </button>
+                        <button id="btn-add-pegawai" onclick="showAddPegawaiModal()" class="bg-primary hover:bg-secondary text-white px-5 py-2.5 rounded-lg font-medium shadow-md shadow-primary/30 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Input Pegawai Baru
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col lg:flex-row gap-4">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-4 top-3 text-gray-400"></i>
+                            <input type="text" id="search-pegawai" oninput="renderTablePegawai()" placeholder="Cari nama, NIP, status, atau profesi..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                        </div>
+                        <select id="filter-faskes" onchange="renderTablePegawai()" class="px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm bg-white min-w-[180px]">
+                            <option value="">Semua Unit Tugas</option>
+                        </select>
+                        <select id="filter-jalur" onchange="renderTablePegawai()" class="px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm bg-white min-w-[150px]">
+                            <option value="">Semua Jalur</option>
+                            <option value="Lama">Pegawai Lama</option>
+                            <option value="Baru">Rekrutmen Baru</option>
+                            <option value="Mutasi">Mutasi Masuk</option>
+                        </select>
+                        <select id="filter-status-aktif" onchange="renderTablePegawai()" class="px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm bg-white min-w-[180px]">
+                            <option value="">Semua Status Aktif</option>
+                            <option value="Aktif" selected>Hanya Pegawai Aktif</option>
+                            <option value="Non-Aktif">Hanya Pegawai Non-Aktif</option>
+                        </select>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[1600px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="p-4 font-semibold">No</th>
+                                    <th class="p-4 font-semibold">Nama Pegawai / TTL / Kontak</th>
+                                    <th class="p-4 font-semibold">NIP / NIK</th>
+                                    <th class="p-4 font-semibold">L/P</th>
+                                    <th class="p-4 font-semibold">Pendidikan & Institusi</th>
+                                    <th class="p-4 font-semibold">Golongan & Jenis Tenaga</th>
+                                    <th class="p-4 font-semibold">Jabatan Terakhir (TMT)</th>
+                                    <th class="p-4 font-semibold">Status & Jalur Kepeg.</th>
+                                    <th class="p-4 font-semibold">Status Aktif</th>
+                                    <th class="p-4 font-semibold">STR & SIP Lengkap</th>
+                                    <th class="p-4 font-semibold">Faskes / Penempatan Khusus</th>
+                                    <th class="p-4 font-semibold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-pegawai-body" class="text-sm divide-y divide-gray-100">
+                                <!-- Data render here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="table-empty-state" class="hidden py-10 text-center text-gray-500">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                        <p>Data tidak ditemukan. Silakan sesuaikan filter Anda.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: STATISTIK -->
+            <div id="view-statistik" class="view-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">Statistik Tenaga Kesehatan <span class="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 active-year-display">2026</span></h2>
+                    <p class="text-gray-500 mt-1">Distribusi berdasarkan rincian Jenis Tenaga kesehatan & penunjang yang berstatus Aktif.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-lg text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-user-nurse text-primary"></i> Rincian Jenis Tenaga Kesehatan</h3>
+                        <div id="stats-nakes-container" class="space-y-5 max-h-[600px] overflow-y-auto pr-3 hide-scroll">
+                            <!-- JS will populate -->
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-tie text-blue-500"></i> Ringkasan Tingkat Pendidikan</h3>
+                            <div id="stats-pendidikan-container" class="space-y-3">
+                                <!-- JS will populate -->
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-layer-group text-teal-600"></i> Distribusi Pangkat / Golongan</h3>
+                            <div id="stats-golongan-container" class="space-y-3">
+                                <!-- JS will populate -->
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-map-pin text-rose-500"></i> Sebaran Penugasan Khusus (Faskes)</h3>
+                            <div id="stats-penugasan-khusus-container" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 hide-scroll">
+                                <!-- JS will populate -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: FASKES -->
+            <div id="view-faskes" class="view-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">Daftar Faskes <span class="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 active-year-display">2026</span></h2>
+                    <p class="text-gray-500 mt-1">Daftar unit dan fasilitas kesehatan yang beroperasi.</p>
+                </div>
+                
+                <div class="relative mb-6">
+                    <i class="fa-solid fa-search absolute left-4 top-3 text-gray-400"></i>
+                    <input type="text" id="search-faskes" oninput="renderFaskes()" placeholder="Cari nama faskes..." class="w-full max-w-md pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                </div>
+
+                <div id="faskes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- JS will populate -->
+                </div>
+            </div>
+
+            <!-- VIEW: KLINIK & APOTEK -->
+            <div id="view-klinik" class="view-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">Daftar Klinik & Apotek <span class="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 active-year-display">2026</span></h2>
+                    <p class="text-gray-500 mt-1">Daftar unit klinik, pelayanan spesialis, dan apotek yang beroperasi.</p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div class="relative w-full max-w-md">
+                        <i class="fa-solid fa-search absolute left-4 top-3 text-gray-400"></i>
+                        <input type="text" id="search-klinik" oninput="renderKlinik()" placeholder="Cari nama klinik atau apotek..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                    </div>
+                    <button onclick="toggleFormKlinik()" class="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 whitespace-nowrap shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Tambah Data
+                    </button>
+                </div>
+
+                <div id="form-container-klinik" class="hidden mb-6 animate-fade-in">
+                    <form onsubmit="submitKlinik(event)" class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3"><i class="fa-solid fa-file-medical text-primary mr-2"></i>Input Klinik / Apotek Baru</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1.5">Nama Faskes</label>
+                                <input type="text" id="input-nama-klinik" required placeholder="Contoh: Apotek Kimia Farma" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1.5">Tipe / Jenis</label>
+                                <select id="input-tipe-klinik" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                                    <option value="" disabled selected>Pilih Tipe</option>
+                                    <option value="Klinik Pratama">Klinik Pratama</option>
+                                    <option value="Klinik Utama">Klinik Utama</option>
+                                    <option value="Klinik Spesialis">Klinik Spesialis</option>
+                                    <option value="Klinik Bersalin">Klinik Bersalin</option>
+                                    <option value="Apotek">Apotek / Apotik</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1.5">Alamat</label>
+                                <input type="text" id="input-alamat-klinik" required placeholder="Contoh: Jl. Merdeka No. 10" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-2">
+                            <button type="button" onclick="toggleFormKlinik()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Batal</button>
+                            <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary/90 transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="klinik-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- JS will populate -->
+                </div>
+            </div>
+
+            <!-- VIEW: NOTA TUGAS -->
+            <div id="view-notatugas" class="view-section hidden animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 flex items-center flex-wrap gap-2">Buku Kontrol Nota Tugas <span class="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 active-year-display">2026</span></h2>
+                        <p class="text-gray-500 mt-1">Manajemen penugasan sementara / pindah internal pegawai antar faskes.</p>
+                    </div>
+                    <button onclick="showAddNotaTugasModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md shadow-amber-600/30 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-circle-plus"></i> Buat Nota Tugas
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row gap-4">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-4 top-3 text-gray-400"></i>
+                            <input type="text" id="search-notatugas" oninput="renderTableNotaTugas()" placeholder="Cari nomor surat, nama pegawai..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm">
+                        </div>
+                        <select id="filter-status-nota" onchange="renderTableNotaTugas()" class="px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm bg-white min-w-[180px]">
+                            <option value="">Semua Status</option>
+                            <option value="Berlaku">Berlaku Aktif</option>
+                            <option value="Selesai/Dicabut">Selesai / Dicabut</option>
+                        </select>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[1200px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="p-4 font-semibold w-16">No</th>
+                                    <th class="p-4 font-semibold">Nomor & Tgl Surat</th>
+                                    <th class="p-4 font-semibold">Pegawai Ditugaskan</th>
+                                    <th class="p-4 font-semibold">Dari (Unit Asal)</th>
+                                    <th class="p-4 font-semibold">Ke (Unit Tujuan)</th>
+                                    <th class="p-4 font-semibold">TMT Penugasan</th>
+                                    <th class="p-4 font-semibold">Status</th>
+                                    <th class="p-4 font-semibold text-center w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-notatugas-body" class="text-sm divide-y divide-gray-100">
+                                <!-- Data render here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="table-notatugas-empty" class="hidden py-10 text-center text-gray-500">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                        <p>Belum ada data Nota Tugas terdaftar.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+
+        <!-- MODAL: ADD / EDIT PEGAWAI -->
+        <div id="modal-pegawai" class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden hidden transform transition-all">
+            <div class="p-5 border-b flex justify-between items-center bg-teal-50">
+                <h3 id="modal-title" class="text-lg font-bold text-gray-800">Input Data Pegawai Baru (Nominatif)</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[80vh] hide-scroll">
+                <form id="form-add-pegawai" onsubmit="handleAddPegawai(event)" class="space-y-5">
+                    
+                    <!-- Pilihan Tahun Pendataan -->
+                    <div class="p-4 bg-teal-50/50 rounded-xl border border-teal-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="text-sm font-bold text-teal-800"><i class="fa-solid fa-calendar-check mr-1"></i> Tahun Pendataan</h4>
+                            <p class="text-xs text-teal-600 mt-1">Pilih tahun periode data pegawai ini. Data akan terkelompok berdasarkan tahun.</p>
+                        </div>
+                        <select id="input-tahun" required class="px-4 py-2 bg-white border border-teal-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none font-bold text-teal-900 w-full md:w-auto">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+
+                    <!-- Kategori Entri: Baru atau Mutasi -->
+                    <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                        <h4 class="text-sm font-bold text-blue-800 mb-3"><i class="fa-solid fa-right-to-bracket mr-1"></i> Informasi Jalur Masuk Pegawai</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Masuk</label>
+                                <select id="input-kategori-masuk" onchange="toggleMutasiMasukFields()" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none font-semibold text-blue-700">
+                                    <option value="Lama">Pegawai Lama (Data Eksisting)</option>
+                                    <option value="Baru">Rekrutmen Baru (CPNS/PPPK/Honorer Baru)</option>
+                                    <option value="Mutasi">Mutasi Masuk (Dari Luar Daerah/Instansi)</option>
+                                </select>
+                            </div>
+                            <div id="container-instansi-asal" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Instansi Asal (Sebelum Mutasi)</label>
+                                <input type="text" id="input-instansi-asal" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="Contoh: Dinkes Kab. Jayapura">
+                            </div>
+                        </div>
+                        <div id="container-sk-mutasi" class="hidden mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor SK Mutasi Masuk</label>
+                                <input type="text" id="input-sk-mutasi" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="No. SK...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Tugas (TMT Mutasi)</label>
+                                <input type="date" id="input-tgl-mutasi" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Status Keaktifan</label>
+                            <select id="input-status-aktif" required onchange="toggleStatusNonAktif()" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm font-bold text-teal-800">
+                                <option value="Aktif">Aktif</option>
+                                <option value="Non-Aktif">Non-Aktif</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Alasan Non-Aktif</label>
+                            <select id="input-alasan-nonaktif" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm disabled:opacity-50">
+                                <option value="">-- Pilih Alasan --</option>
+                                <option value="Mutasi">Mutasi Keluar</option>
+                                <option value="Pensiun">Pensiun</option>
+                                <option value="Meninggal Dunia">Meninggal Dunia</option>
+                                <option value="Habis Kontrak">Habis Kontrak</option>
+                                <option value="Melanjutkan Pendidikan">Melanjutkan Pendidikan</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Faskes (Unit Tugas)</label>
+                            <select id="input-faskes" required onchange="toggleDinkesFields()" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm font-bold text-teal-800">
+                                <!-- Dipopulasi otomatis -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- KOTAK KHUSUS DINAS KESEHATAN -->
+                    <div id="container-dinkes" class="hidden p-4 bg-purple-50 rounded-xl border border-purple-200">
+                        <label class="block text-sm font-bold text-purple-800 mb-1"><i class="fa-solid fa-sitemap mr-1"></i> Penempatan Khusus Dinas Kesehatan</label>
+                        <p class="text-[11px] text-purple-600 mb-3">Wajib pilih bidang atau sekretariat untuk pegawai yang bertugas di Dinas Kesehatan.</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-purple-800 mb-1">Penempatan Sub Bagian / Bidang</label>
+                                <select id="input-penempatan-dinkes" class="w-full px-3 py-2 bg-white border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500/50 outline-none text-sm font-bold text-purple-900">
+                                    <option value="">-- Pilih Penempatan (Abaikan jika Kepala Dinas) --</option>
+                                    <optgroup label="Sekretariat">
+                                        <option value="Sub Bagian Umum & Kepegawaian">Sub Bagian Umum & Kepegawaian</option>
+                                        <option value="Sub Bagian Keuangan & Aset">Sub Bagian Keuangan & Aset</option>
+                                        <option value="Sub Bagian Program & Pelaporan">Sub Bagian Program & Pelaporan</option>
+                                    </optgroup>
+                                    <optgroup label="Bidang Kesehatan">
+                                        <option value="Bidang Kesehatan Masyarakat (Kesmas)">Bidang Kesehatan Masyarakat (Kesmas)</option>
+                                        <option value="Bidang Pencegahan & Pengendalian Penyakit (P2P)">Bidang Pencegahan & Pengendalian Penyakit (P2P)</option>
+                                        <option value="Bidang Pelayanan Kesehatan (Yankes)">Bidang Pelayanan Kesehatan (Yankes)</option>
+                                        <option value="Bidang Sumber Daya Kesehatan (SDK)">Bidang Sumber Daya Kesehatan (SDK)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <!-- INPUT JABATAN STAFF DINAS KESEHATAN -->
+                            <div>
+                                <label class="block text-xs font-bold text-purple-800 mb-1">Jabatan Staff Dinas Kesehatan (Opsional)</label>
+                                <input type="text" id="input-jabatan-staff-dinkes" class="w-full px-3 py-2 bg-white border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500/50 outline-none text-sm font-bold text-purple-900" placeholder="Contoh: Staff Sub Bagian Umum / Pengelola Program">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap & Gelar</label>
+                            <input type="text" id="input-nama" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: ANITA, S.Kep">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tempat, Tanggal Lahir</label>
+                            <input type="text" id="input-ttl" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: Jayapura, 08 April 1975">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIP (Kosongkan jika bukan ASN)</label>
+                            <input type="text" id="input-nip" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: 197504082006052002">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIK (No. KTP)</label>
+                            <input type="text" id="input-nik" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: 910401xxxxxxxxxx">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                            <select id="input-gender" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                                <option value="L">Laki-Laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
+                            <select id="input-agama" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                                <option value="Kristen Protestan">Kristen Protestan</option>
+                                <option value="Katolik">Katolik</option>
+                                <option value="Islam">Islam</option>
+                                <option value="Hindu">Hindu</option>
+                                <option value="Buddha">Buddha</option>
+                                <option value="Konghucu">Konghucu</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- TAMBAHAN NOMOR HP DAN EMAIL -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor HP / WhatsApp</label>
+                            <input type="text" id="input-nohp" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: 08123456789">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
+                            <input type="email" id="input-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: nama@email.com">
+                        </div>
+                    </div>
+
+                    <!-- PENDIDIKAN TERAKHIR & JENIS TENAGA BERDAMPINGAN -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan Terakhir</label>
+                            <select id="input-pendidikan" onchange="updateJenisTenaga(this.value)" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                                <option value="">-- Pilih Pendidikan --</option>
+                                <option value="SD">SD</option>
+                                <option value="SMP">SMP</option>
+                                <option value="SMA/SMK">SMA / SMK</option>
+                                <option value="D3">D3 (Diploma III)</option>
+                                <option value="D4">D4 (Diploma IV)</option>
+                                <option value="S1">S1 (Sarjana)</option>
+                                <option value="S2">S2 (Magister)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Tenaga (Profesi)</label>
+                            <select id="input-profesi" required onchange="toggleProfesiLainnya()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none mb-2">
+                                <!-- Dipopulasi otomatis via updateJenisTenaga -->
+                            </select>
+                            <input type="text" id="input-profesi-lainnya" class="hidden w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm bg-blue-50" placeholder="Ketik jenis profesi lainnya...">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Sekolah / Institusi</label>
+                            <input type="text" id="input-nama-sekolah" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: Poltekkes Kemenkes Jayapura">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status OAP</label>
+                            <select id="input-oap" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                                <option value="OAP">Papua (OAP)</option>
+                                <option value="Non OAP">Non Papua (Non OAP)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pangkat / Golongan</label>
+                            <select id="input-golongan" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                                <option value="Non ASN / Lainnya">Non ASN / Lainnya</option>
+                                <option value="I/a (Juru Muda)">I/a (Juru Muda)</option>
+                                <option value="I/b (Juru Muda Tingkat I)">I/b (Juru Muda Tingkat I)</option>
+                                <option value="I/c (Juru)">I/c (Juru)</option>
+                                <option value="I/d (Juru Tingkat I)">I/d (Juru Tingkat I)</option>
+                                <option value="II/a (Pengatur Muda)">II/a (Pengatur Muda)</option>
+                                <option value="II/b (Pengatur Muda Tingkat I)">II/b (Pengatur Muda Tingkat I)</option>
+                                <option value="II/c (Pengatur)">II/c (Pengatur)</option>
+                                <option value="II/d (Pengatur Tingkat I)">II/d (Pengatur Tingkat I)</option>
+                                <option value="III/a (Penata Muda)">III/a (Penata Muda)</option>
+                                <option value="III/b (Penata Muda Tingkat I)">III/b (Penata Muda Tingkat I)</option>
+                                <option value="III/c (Penata)">III/c (Penata)</option>
+                                <option value="III/d (Penata Tingkat I)">III/d (Penata Tingkat I)</option>
+                                <option value="IV/a (Pembina)">IV/a (Pembina)</option>
+                                <option value="IV/b (Pembina Tingkat I)">IV/b (Pembina Tingkat I)</option>
+                                <option value="IV/c (Pembina Utama)">IV/c (Pembina Utama)</option>
+                                <option value="IV/d (Pembina Utama Madya)">IV/d (Pembina Utama Madya)</option>
+                                <option value="IV/e (Pembina Utama)">IV/e (Pembina Utama)</option>
+                                <option value="V (PPPK)">V (PPPK)</option>
+                                <option value="VI (PPPK)">VI (PPPK)</option>
+                                <option value="VII (PPPK)">VII (PPPK)</option>
+                                <option value="VIII (PPPK)">VIII (PPPK)</option>
+                                <option value="IX (PPPK)">IX (PPPK)</option>
+                                <option value="X (PPPK)">X (PPPK)</option>
+                                <option value="XI (PPPK)">XI (PPPK)</option>
+                                <option value="XII (PPPK)">XII (PPPK)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian</label>
+                            <select id="input-kepegawaian" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none">
+                                <option value="PNS">PNS (Pegawai Negeri Sipil)</option>
+                                <option value="CPNS">CPNS (Calon PNS)</option>
+                                <option value="PPPK">PPPK (P3K)</option>
+                                <option value="K2">Tenaga K2</option>
+                                <option value="BLUD">BLUD (Badan Layanan Umum Daerah)</option>
+                                <option value="Magang/Honorer">Magang / Honorer / PTT</option>
+                                <option value="Penugasan Khusus">Penugasan Khusus</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-teal-50/50 rounded-xl border border-teal-100">
+                        <label class="block text-sm font-bold text-teal-800 mb-1">Jabatan Terakhir (TMT)</label>
+                        <input type="text" id="input-jabatan-tmt" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm" placeholder="CONTOH: Perawat Penyelia (TMT: 12/02/2026)">
+                        <p class="text-[11px] text-teal-600 mt-1"><i class="fa-solid fa-circle-info"></i> Tuliskan rincian nama jabatan fungsional atau struktural beserta tanggal TMT (Terhitung Mulai Tanggal).</p>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-4">
+                        <h4 class="text-sm font-bold text-gray-800 mb-3"><i class="fa-solid fa-id-card-clip text-primary mr-1"></i> Data STR & SIP</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor STR</label>
+                                <input type="text" id="input-str" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: STR-91040...">
+                                <div class="mt-2 flex items-center gap-2">
+                                    <input type="checkbox" id="input-str-seumur-hidup" onchange="toggleStrSeumurHidup()" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                    <label for="input-str-seumur-hidup" class="text-xs font-semibold text-teal-800 cursor-pointer">STR Seumur Hidup</label>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tgl Terbit STR</label>
+                                    <input type="date" id="input-tgl-str" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label id="label-kadaluarsa-str" class="block text-sm font-medium text-gray-700 mb-1">Kadaluarsa STR</label>
+                                    <input type="date" id="input-kadaluarsa-str" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor SIP</label>
+                                <input type="text" id="input-sip" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none" placeholder="CONTOH: SIP-91040...">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tgl Terbit SIP</label>
+                                    <input type="date" id="input-tgl-sip" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Kadaluarsa SIP</label>
+                                    <input type="date" id="input-kadaluarsa-sip" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 outline-none text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div class="mt-6 flex gap-3 justify-end border-t pt-4">
+                        <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-secondary shadow-md"><i class="fa-solid fa-save"></i> Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: NOTA TUGAS -->
+        <div id="modal-notatugas" class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden hidden transform transition-all">
+            <div class="p-5 border-b flex justify-between items-center bg-amber-50">
+                <h3 id="modal-nt-title" class="text-lg font-bold text-gray-800">Buat Nota Tugas Baru</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <form id="form-notatugas" onsubmit="handleSaveNotaTugas(event)" class="space-y-4">
+                    
+                    <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
+                        <div>
+                            <h4 class="text-sm font-bold text-amber-800"><i class="fa-solid fa-calendar-check mr-1"></i> Tahun Nota Tugas</h4>
+                            <p class="text-xs text-amber-600 mt-1">Tahun periode surat nota tugas dikeluarkan.</p>
+                        </div>
+                        <select id="nt-tahun" required class="px-4 py-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none font-bold text-amber-900 w-full md:w-auto">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Nota Tugas</label>
+                            <input type="text" id="nt-nomor" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none" placeholder="No Surat...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat</label>
+                            <input type="date" id="nt-tanggal" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Pegawai (Yang Ditugaskan)</label>
+                        <select id="nt-pegawai" required onchange="handlePegawaiSelectForNT()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none bg-white">
+                            <option value="">-- Pilih Pegawai Aktif --</option>
+                            <!-- Dipopulasi via JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Dari (Faskes Asal)</label>
+                            <input type="text" id="nt-faskes-asal-display" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-600 font-medium" placeholder="Pilih pegawai dulu...">
+                            <input type="hidden" id="nt-faskes-asal-id">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-amber-700 mb-1">Ke (Faskes Tujuan)</label>
+                            <select id="nt-faskes-tujuan" required class="w-full px-3 py-2 border border-amber-300 bg-amber-50/30 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none text-sm font-bold">
+                                <option value="">-- Pilih Tujuan --</option>
+                                <!-- Dipopulasi via faskesList -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Terhitung Mulai Tanggal (TMT)</label>
+                            <input type="date" id="nt-tmt" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Nota Tugas</label>
+                            <select id="nt-status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none font-bold">
+                                <option value="Berlaku" class="text-green-600">Berlaku Aktif</option>
+                                <option value="Selesai" class="text-gray-600">Selesai / Berakhir</option>
+                                <option value="Dicabut" class="text-red-600">Dicabut / Dibatalkan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Alasan Penugasan</label>
+                        <textarea id="nt-keterangan" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500/50 outline-none" placeholder="Contoh: Mengisi kekosongan tenaga bidan sementara..."></textarea>
+                    </div>
+
+                    <div class="mt-6 flex gap-3 justify-end border-t pt-4">
+                        <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 shadow-md"><i class="fa-solid fa-save"></i> Simpan Nota Tugas</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: KONFIRMASI HAPUS -->
+        <div id="modal-delete" class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden hidden transform transition-all p-6 text-center">
+            <div class="w-16 h-16 bg-red-50 rounded-full mx-auto flex items-center justify-center text-red-500 text-3xl mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Hapus Data?</h3>
+            <p class="text-gray-500 text-sm mb-6">Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin ingin menghapus <span id="delete-item-name" class="font-semibold text-gray-800"></span>?</p>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModals()" class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">Batal</button>
+                <button type="button" onclick="executeDelete()" class="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors shadow-md shadow-red-600/20">Ya, Hapus</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NOTIFIKASI TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-gray-800 text-white px-5 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50">
+        <i class="fa-solid fa-check-circle text-green-400"></i>
+        <span id="toast-msg" class="text-sm font-medium">Berhasil</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const fallbackConfig = {
+            apiKey: "AIzaSyBWthT-I1OPK2lpZ-LkXa2vMp8V0R9kA7U",
+            authDomain: "sdmk-kab.firebaseapp.com",
+            databaseURL: "https://sdmk-kab-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "sdmk-kab",
+            storageBucket: "sdmk-kab.firebasestorage.app",
+            messagingSenderId: "886261689429",
+            appId: "1:886261689429:web:6e22ded2d4f20e9f8f78dc"
+        };
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : '1:886261689429:web:6e22ded2d4f20e9f8f78dc';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let user = null;
+        
+        let allEmployees = [];
+        let allNotaTugas = [];
+        
+        let employees = [];
+        let notaTugasData = [];
+        
+        let globalYear = '2026';
+
+        const faskesList = [
+            { id: 'r1', name: 'Puskesmas Maniwo', type: 'Non Rawat Inap', address: 'Distrik Wapoga' },
+            { id: 'r2', name: 'Puskesmas Wapoga', type: 'Non Rawat Inap', address: 'Distrik Wapoga' },
+            { id: 'r3', name: 'Puskesmas Napan', type: 'Non Rawat Inap', address: 'Distrik Napan' },
+            { id: 'r4', name: 'Puskesmas Moor', type: 'Non Rawat Inap', address: 'Kep. Moora' },
+            { id: 'r5', name: 'Puskesmas Mambor', type: 'Non Rawat Inap', address: 'Kep. Moora' },
+            { id: 'r6', name: 'Puskesmas Manunggal Jaya', type: 'Non Rawat Inap', address: 'Distrik Makimi' },
+            { id: 'r7', name: 'Puskesmas Lagari', type: 'Rawat Inap', address: 'Distrik Makimi' },
+            { id: 'r8', name: 'Puskesmas Samabusa', type: 'Rawat Inap', address: 'Distrik Teluk Kimi' },
+            { id: 'r9', name: 'Puskesmas Kimi', type: 'Non Rawat Inap', address: 'Distrik Teluk Kimi' },
+            { id: 'r10', name: 'Puskesmas Sanoba', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r11', name: 'Puskesmas Siriwini', type: 'Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r12', name: 'Puskesmas Nabarua', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r13', name: 'Puskesmas Karang Mulia', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r14', name: 'Puskesmas Nabire Kota', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r15', name: 'Puskesmas Karang Tumaritis', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r16', name: 'Puskesmas Bumi Wonorejo', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r17', name: 'Puskesmas Sp1 Kalibumi', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r18', name: 'Puskesmas Karadiri', type: 'Non Rawat Inap', address: 'Distrik Wanggar' },
+            { id: 'r19', name: 'Puskesmas Wanggar Sari', type: 'Rawat Inap', address: 'Distrik Wanggar' },
+            { id: 'r20', name: 'Puskesmas Yaro', type: 'Non Rawat Inap', address: 'Distrik Yaro' },
+            { id: 'r21', name: 'Puskesmas Wami', type: 'Non Rawat Inap', address: 'Distrik Yaur' },
+            { id: 'r22', name: 'Puskesmas Sp3 Wadio', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r23', name: 'Puskesmas Topo', type: 'Rawat Inap', address: 'Distrik Uwapa' },
+            { id: 'r24', name: 'Puskesmas Topo Jaya', type: 'Non Rawat Inap', address: 'Distrik Uwapa' },
+            { id: 'r25', name: 'Puskesmas Siriwo', type: 'Non Rawat Inap', address: 'Distrik Siriwo' },
+            { id: 'r26', name: 'Puskesmas Kwatisore', type: 'Non Rawat Inap', address: 'Distrik Yaur' },
+            { id: 'r27', name: 'Puskesmas Bawei', type: 'Non Rawat Inap', address: 'Teluk Umar' },
+            { id: 'r28', name: 'Puskesmas Yeretuar', type: 'Rawat Inap', address: 'Teluk Umar' },
+            { id: 'r29', name: 'Puskesmas Dikiya', type: 'Non Rawat Inap', address: 'Distrik Dipa' },
+            { id: 'r30', name: 'Puskesmas Gokodimi', type: 'Non Rawat Inap', address: 'Distrik Menou' },
+            { id: 'r31', name: 'Puskesmas Diyaikunu', type: 'Non Rawat Inap', address: 'Distrik Siriwo' },
+            { id: 'r32', name: 'Puskesmas Kalibobo', type: 'Non Rawat Inap', address: 'Distrik Nabire' },
+            { id: 'r33', name: 'Klinik GSIA', type: 'Spesialis', address: 'Distrik Nabire Barat' },
+            { id: 'r34', name: 'Dinas Kesehatan', type: 'Dinas', address: 'Distrik Nabire' },
+            { id: 'rs1', name: 'RSUD Nabire', type: 'Rumah Sakit', address: 'Distrik Nabire' }
+        ];
+
+        const jenisTenagaByPendidikan = {
+            'SD': ['Cleaning Service', 'Sopir/Motores', 'Perkarya', 'Satpam'],
+            'SMP': ['Cleaning Service', 'Sopir/Motores', 'Perkarya', 'Satpam'],
+            'SMA/SMK': ['Satpam', 'Sopir/Motores', 'Cleaning Service', 'Perkarya', 'Pengelola Data', 'Staff Dinkes'],
+            'D3': ['Perawat', 'Bidan', 'Gizi', 'ATLM', 'Kesehatan Lingkungan', 'Promosi Kesehatan', 'Fisioterapi', 'Terapis Gigi & Mulut', 'Rekam Medik', 'Pengelola Data', 'Tenaga IT', 'Staff Dinkes'],
+            'D4': ['Dokter', 'Dokter Gigi', 'Perawat', 'Bidan', 'Apoteker', 'Gizi', 'ATLM', 'Kesehatan Lingkungan', 'Epidemiolog', 'Promosi Kesehatan', 'Fisioterapi', 'Psikologi Klinis', 'Rekam Medik', 'Administrator Kesehatan', 'Tenaga IT', 'Pengelola Data', 'Bendahara (Keuangan)', 'Staff Dinkes', 'Kepala Seksi', 'Kepala Bidang', 'Sekretaris'],
+            'S1': ['Dokter', 'Dokter Gigi', 'Perawat', 'Bidan', 'Apoteker', 'Gizi', 'ATLM', 'Kesehatan Lingkungan', 'Epidemiolog', 'Promosi Kesehatan', 'Fisioterapi', 'Psikologi Klinis', 'Rekam Medik', 'Administrator Kesehatan', 'Tenaga IT', 'Pengelola Data', 'Bendahara (Keuangan)', 'Staff Dinkes', 'Kepala Seksi', 'Kepala Bidang', 'Sekretaris'],
+            'S2': ['Dokter Spesialis', 'Dokter', 'Perawat', 'Bidan', 'Apoteker', 'Epidemiolog', 'Administrator Kesehatan', 'Psikologi Klinis', 'Kepala Dinas Kesehatan', 'Kepala Bidang', 'Sekretaris']
+        };
+
+        window.updateJenisTenaga = function(pendidikan, selectedValue = '') {
+            const profesiSelect = document.getElementById('input-profesi');
+            if (!profesiSelect) return;
+
+            profesiSelect.innerHTML = '<option value="">-- Pilih Jenis Tenaga --</option>';
+
+            if (!pendidikan || !jenisTenagaByPendidikan[pendidikan]) {
+                profesiSelect.innerHTML = '<option value="">-- Pilih Pendidikan Terlebih Dahulu --</option>';
+                if(typeof toggleProfesiLainnya === 'function') toggleProfesiLainnya();
+                return;
+            }
+
+            const daftarTenaga = jenisTenagaByPendidikan[pendidikan];
+            
+            let isCustomValue = selectedValue !== '' && !daftarTenaga.includes(selectedValue);
+
+            daftarTenaga.forEach(p => {
+                const selected = (p === selectedValue && !isCustomValue) ? 'selected' : '';
+                profesiSelect.innerHTML += `<option value="${p}" ${selected}>${p}</option>`;
+            });
+
+            profesiSelect.innerHTML += `<option value="Lainnya" ${isCustomValue ? 'selected' : ''}>Lainnya (Ketik Manual)</option>`;
+            
+            if(typeof toggleProfesiLainnya === 'function') toggleProfesiLainnya();
+        };
+
+        window.toggleProfesiLainnya = function() {
+            const select = document.getElementById('input-profesi');
+            const inputLainnya = document.getElementById('input-profesi-lainnya');
+            if (select && inputLainnya) {
+                if (select.value === 'Lainnya') {
+                    inputLainnya.classList.remove('hidden');
+                    inputLainnya.required = true;
+                } else {
+                    inputLainnya.classList.add('hidden');
+                    inputLainnya.required = false;
+                    inputLainnya.value = '';
+                }
+            }
+        };
+
+        let editingEmployeeId = null;
+        let editingNotaTugasId = null;
+        let deleteTarget = { type: null, id: null, name: '' };
+
+        window.changeGlobalYear = function(year) {
+            globalYear = year;
+            filterAndRenderData();
+            showToast(`Menampilkan data tahun ${year}`);
+        }
+
+        function filterAndRenderData() {
+            employees = allEmployees.filter(emp => (emp.tahun || '2026') <= parseInt(globalYear));
+            notaTugasData = allNotaTugas.filter(nt => (nt.tahun || '2026') <= parseInt(globalYear));
+            
+            document.querySelectorAll('.active-year-display').forEach(el => {
+                el.innerText = globalYear;
+            });
+
+            renderDashboard();
+            renderTablePegawai();
+            renderStatistik();
+            renderFaskes();
+            renderKlinik();
+            renderTableNotaTugas();
+            populatePegawaiForNotaTugas();
+        }
+
+        function initSelectOptions() {
+            const faskesSelects = [
+                document.getElementById('input-faskes'), 
+                document.getElementById('filter-faskes'), 
+                document.getElementById('nt-faskes-tujuan')
+            ];
+            
+            faskesSelects.forEach(select => {
+                if(!select) return;
+                const isFilter = select.id === 'filter-faskes';
+                select.innerHTML = isFilter ? '<option value="">Semua Unit Tugas</option>' : '<option value="">-- Pilih Faskes / Unit Tugas --</option>';
+                faskesList.forEach(f => {
+                    select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+                });
+            });
+
+            const profesiSelect = document.getElementById('input-profesi');
+            if (profesiSelect) {
+                profesiSelect.innerHTML = '<option value="">-- Pilih Pendidikan Terlebih Dahulu --</option>';
+            }
+        }
+
+        const initAuth = async () => {
+            updateDbStatusIndicator('bg-amber-500 animate-pulse', 'Sedang Autentikasi...');
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Firebase Authentication Error: ", err);
+                updateDbStatusIndicator('bg-red-500', 'Gagal Sinkronisasi Cloud');
+                showToast("Koneksi database gagal. Silakan muat ulang.");
+            }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (u) {
+                updateDbStatusIndicator('bg-emerald-500 animate-bounce', 'Koneksi Cloud Aktif');
+                setupFirestoreSync();
+            } else {
+                updateDbStatusIndicator('bg-red-500', 'Sesi Terputus');
+            }
+        });
+
+        let unsubEmployees = null;
+        let unsubNotaTugas = null;
+
+        function setupFirestoreSync() {
+            if (!user) return;
+            
+            const empRef = collection(db, 'artifacts', appId, 'public', 'data', 'employees');
+            if (unsubEmployees) unsubEmployees();
+            unsubEmployees = onSnapshot(empRef, (snapshot) => {
+                allEmployees = [];
+                snapshot.forEach(doc => allEmployees.push({ id: doc.id, ...doc.data() }));
+                
+                updateDbStatusIndicator('bg-emerald-500', 'Sinkronisasi Aktif');
+                filterAndRenderData();
+            }, (error) => {
+                console.error("Firestore Snapshot Error Pegawai: ", error);
+                updateDbStatusIndicator('bg-red-500', 'Galat Sinkronisasi');
+            });
+
+            const ntRef = collection(db, 'artifacts', appId, 'public', 'data', 'nota_tugas');
+            if (unsubNotaTugas) unsubNotaTugas();
+            unsubNotaTugas = onSnapshot(ntRef, (snapshot) => {
+                allNotaTugas = [];
+                snapshot.forEach(doc => allNotaTugas.push({ id: doc.id, ...doc.data() }));
+                filterAndRenderData();
+            }, (error) => {
+                console.error("Firestore Snapshot Error Nota Tugas: ", error);
+            });
+        }
+
+        function updateDbStatusIndicator(colorClass, text) {
+            const dotEl = document.getElementById('db-status-dot');
+            const textEl = document.getElementById('db-status-text');
+            const dotMobileEl = document.getElementById('db-status-dot-mobile');
+
+            if (dotEl) dotEl.className = `w-2.5 h-2.5 rounded-full ${colorClass}`;
+            if (textEl) textEl.innerText = text;
+            if (dotMobileEl) dotMobileEl.className = `w-2 h-2 rounded-full ${colorClass.replace('w-2.5 h-2.5', '')}`;
+        }
+
+        window.navigate = function(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.menu-item').forEach(el => {
+                el.classList.remove('active', 'bg-accent', 'text-primary', 'font-semibold', 'border-r-4', 'border-primary');
+            });
+
+            const targetView = document.getElementById(`view-${viewId}`);
+            if (targetView) targetView.classList.remove('hidden');
+            
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            if (activeBtn) activeBtn.classList.add('active', 'bg-accent', 'text-primary', 'font-semibold', 'border-r-4', 'border-primary');
+
+            if(viewId === 'dashboard') renderDashboard();
+            if(viewId === 'pegawai') renderTablePegawai();
+            if(viewId === 'statistik') renderStatistik();
+            if(viewId === 'faskes') renderFaskes();
+            if(viewId === 'klinik') renderKlinik();
+            if(viewId === 'notatugas') renderTableNotaTugas();
+        }
+
+        window.renderDashboard = function() {
+            let activeEmployees = employees.filter(emp => emp.statusAktif !== 'Non-Aktif');
+            let nonAktifCount = employees.filter(emp => emp.statusAktif === 'Non-Aktif').length;
+            let mutasiMasukCount = activeEmployees.filter(emp => emp.kategoriMasuk === 'Mutasi').length;
+
+            const totalPegawaiEl = document.getElementById('dash-total-pegawai');
+            const totalFaskesEl = document.getElementById('dash-total-faskes');
+            const nonAktifEl = document.getElementById('dash-total-nonaktif-badge');
+            const totalMutasiEl = document.getElementById('dash-total-mutasi');
+
+            const faskesPuskesmasRsud = faskesList.filter(f => 
+                f.name.toLowerCase().includes('puskesmas') || 
+                f.name.toLowerCase().includes('rsud')
+            ).length;
+            
+            if (totalPegawaiEl) totalPegawaiEl.innerText = activeEmployees.length;
+            if (totalFaskesEl) totalFaskesEl.innerText = faskesPuskesmasRsud;
+            if (nonAktifEl) nonAktifEl.innerText = nonAktifCount;
+            if (totalMutasiEl) totalMutasiEl.innerText = mutasiMasukCount;
+            
+            let oap = 0, nonOap = 0;
+            let oapL = 0, oapP = 0, nonOapL = 0, nonOapP = 0;
+
+            let pns = 0, cpns = 0, pppk = 0, k2 = 0, blud = 0, magang = 0;
+            let asnL = 0, asnP = 0, pppkL = 0, pppkP = 0, k2L = 0, k2P = 0, bludL = 0, bludP = 0, magangL = 0, magangP = 0;
+
+            activeEmployees.forEach(emp => {
+                if(emp.statusOAP === 'OAP') {
+                    oap++;
+                    if (emp.gender === 'L') oapL++; else oapP++;
+                } else {
+                    nonOap++;
+                    if (emp.gender === 'L') nonOapL++; else nonOapP++;
+                }
+
+                if(emp.statusASN === 'PNS' || emp.statusASN === 'CPNS') {
+                    if (emp.statusASN === 'PNS') pns++;
+                    if (emp.statusASN === 'CPNS') cpns++;
+                    if (emp.gender === 'L') asnL++; else asnP++;
+                }
+                else if(emp.statusASN === 'PPPK') {
+                    pppk++;
+                    if (emp.gender === 'L') pppkL++; else pppkP++;
+                }
+                else if(emp.statusASN === 'K2') {
+                    k2++;
+                    if (emp.gender === 'L') k2L++; else k2P++;
+                }
+                else if(emp.statusASN === 'BLUD') {
+                    blud++;
+                    if (emp.gender === 'L') bludL++; else bludP++;
+                }
+                else if(emp.statusASN === 'Magang/Honorer') {
+                    magang++;
+                    if (emp.gender === 'L') magangL++; else magangP++;
+                }
+            });
+
+            const klinikApotekCount = faskesList.filter(f => 
+                f.name.toLowerCase().includes('klinik') || 
+                f.type.toLowerCase().includes('spesialis') || 
+                f.type.toLowerCase().includes('klinik') ||
+                f.name.toLowerCase().includes('apotek') ||
+                f.name.toLowerCase().includes('apotik') ||
+                f.type.toLowerCase().includes('apotek') ||
+                f.type.toLowerCase().includes('apotik')
+            ).length;
+
+            const totalKlinikApotekEl = document.getElementById('dash-total-klinik');
+            if (totalKlinikApotekEl) totalKlinikApotekEl.innerText = klinikApotekCount;
+
+            if (document.getElementById('dash-total-oap')) document.getElementById('dash-total-oap').innerText = oap;
+            if (document.getElementById('dash-total-nonoap')) document.getElementById('dash-total-nonoap').innerText = nonOap;
+            if (document.getElementById('dash-oap-l')) document.getElementById('dash-oap-l').innerText = oapL;
+            if (document.getElementById('dash-oap-p')) document.getElementById('dash-oap-p').innerText = oapP;
+            if (document.getElementById('dash-nonoap-l')) document.getElementById('dash-nonoap-l').innerText = nonOapL;
+            if (document.getElementById('dash-nonoap-p')) document.getElementById('dash-nonoap-p').innerText = nonOapP;
+            
+            if (document.getElementById('dash-asn')) document.getElementById('dash-asn').innerText = pns + cpns;
+            if (document.getElementById('dash-asn-l')) document.getElementById('dash-asn-l').innerText = asnL;
+            if (document.getElementById('dash-asn-p')) document.getElementById('dash-asn-p').innerText = asnP;
+
+            if (document.getElementById('dash-pppk')) document.getElementById('dash-pppk').innerText = pppk;
+            if (document.getElementById('dash-pppk-l')) document.getElementById('dash-pppk-l').innerText = pppkL;
+            if (document.getElementById('dash-pppk-p')) document.getElementById('dash-pppk-p').innerText = pppkP;
+
+            if (document.getElementById('dash-k2')) document.getElementById('dash-k2').innerText = k2;
+            if (document.getElementById('dash-k2-l')) document.getElementById('dash-k2-l').innerText = k2L;
+            if (document.getElementById('dash-k2-p')) document.getElementById('dash-k2-p').innerText = k2P;
+
+            if (document.getElementById('dash-blud')) document.getElementById('dash-blud').innerText = blud;
+            if (document.getElementById('dash-blud-l')) document.getElementById('dash-blud-l').innerText = bludL;
+            if (document.getElementById('dash-blud-p')) document.getElementById('dash-blud-p').innerText = bludP;
+
+            if (document.getElementById('dash-nonasn')) document.getElementById('dash-nonasn').innerText = magang;
+            if (document.getElementById('dash-nonasn-l')) document.getElementById('dash-nonasn-l').innerText = magangL;
+            if (document.getElementById('dash-nonasn-p')) document.getElementById('dash-nonasn-p').innerText = magangP;
+        }
+
+        window.renderTablePegawai = function() {
+            const tbody = document.getElementById('table-pegawai-body');
+            if (!tbody) return;
+
+            const searchInput = document.getElementById('search-pegawai') ? document.getElementById('search-pegawai').value.toLowerCase() : '';
+            const filterFaskesId = document.getElementById('filter-faskes') ? document.getElementById('filter-faskes').value : '';
+            const filterJalur = document.getElementById('filter-jalur') ? document.getElementById('filter-jalur').value : '';
+            const filterStatusAktif = document.getElementById('filter-status-aktif') ? document.getElementById('filter-status-aktif').value : '';
+            const emptyState = document.getElementById('table-empty-state');
+            
+            tbody.innerHTML = '';
+            
+            let filtered = employees.filter(emp => {
+                const matchSearch = emp.name.toLowerCase().includes(searchInput) || 
+                                    emp.profesi.toLowerCase().includes(searchInput) ||
+                                    (emp.nip && emp.nip.includes(searchInput)) ||
+                                    (emp.jabatanTmt && emp.jabatanTmt.toLowerCase().includes(searchInput)) ||
+                                    (emp.nik && emp.nik.includes(searchInput)) ||
+                                    (emp.instansiAsal && emp.instansiAsal.toLowerCase().includes(searchInput)) ||
+                                    (emp.jabatanStaffDinkes && emp.jabatanStaffDinkes.toLowerCase().includes(searchInput)) ||
+                                    (emp.noHp && emp.noHp.includes(searchInput)) ||
+                                    (emp.email && emp.email.toLowerCase().includes(searchInput)) ||
+                                    (emp.alasanNonAktif && emp.alasanNonAktif.toLowerCase().includes(searchInput));
+                const matchFaskes = filterFaskesId ? emp.faskesId === filterFaskesId : true;
+                const matchJalur = filterJalur ? (emp.kategoriMasuk === filterJalur || (!emp.kategoriMasuk && filterJalur === 'Lama')) : true;
+                
+                let matchStatus = true;
+                if (filterStatusAktif) {
+                    if (filterStatusAktif === 'Aktif') matchStatus = emp.statusAktif !== 'Non-Aktif';
+                    if (filterStatusAktif === 'Non-Aktif') matchStatus = emp.statusAktif === 'Non-Aktif';
+                }
+                return matchSearch && matchFaskes && matchJalur && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach((emp, index) => {
+                    const faskes = faskesList.find(f => f.id === emp.faskesId);
+                    const faskesName = faskes ? faskes.name : 'Tidak Diketahui';
+                    
+                    const strStatus = emp.str ? (emp.strSeumurHidup ? `<span class="text-green-600 font-semibold"><i class="fa-solid fa-check"></i> STR Seumur Hidup</span>` : `STR: ${emp.kadaluarsaStr || '-'}`) : `<span class="text-red-500">Tidak ada STR</span>`;
+                    const sipStatus = emp.sip ? `SIP: ${emp.kadaluarsaSip || '-'}` : `<span class="text-red-500">Tidak ada SIP</span>`;
+                    
+                    let badgeJalur = '';
+                    if (emp.kategoriMasuk === 'Mutasi') {
+                        badgeJalur = `<div class="mt-1"><span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-plane-arrival"></i> Mutasi Masuk</span><div class="text-[9px] text-gray-500 font-medium leading-tight mt-0.5">Asal: ${emp.instansiAsal || '-'}</div></div>`;
+                    } else if (emp.kategoriMasuk === 'Baru') {
+                        badgeJalur = `<div class="mt-1"><span class="bg-purple-100 text-purple-800 text-[10px] px-2 py-0.5 rounded font-bold">Rekrutmen Baru</span></div>`;
+                    } else {
+                        badgeJalur = `<div class="mt-1"><span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded font-bold">Pegawai Lama</span></div>`;
+                    }
+
+                    let penempatanKhusus = '';
+                    if (emp.faskesId === 'r34' && (emp.penempatanDinkes || emp.jabatanStaffDinkes)) {
+                        penempatanKhusus = `<div class="mt-2 flex flex-col gap-1 text-[10px] text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-100 font-medium shadow-sm">
+                            ${emp.penempatanDinkes ? `<div><i class="fa-solid fa-sitemap mr-1 text-purple-500"></i><span class="leading-tight">${emp.penempatanDinkes}</span></div>` : ''}
+                            ${emp.jabatanStaffDinkes ? `<div><i class="fa-solid fa-user-tie mr-1 text-purple-500"></i><span class="leading-tight">Jabatan: ${emp.jabatanStaffDinkes}</span></div>` : ''}
+                        </div>`;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50/50 transition-colors border-b border-gray-50';
+                    row.innerHTML = `
+                        <td class="p-4">${index + 1}</td>
+                        <td class="p-4">
+                            <div class="font-bold text-gray-800">${emp.name}</div>
+                            <div class="text-xs text-gray-500">${emp.ttl}</div>
+                            <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-2">
+                                <span title="Nomor HP" class="truncate max-w-[100px]"><i class="fa-solid fa-phone"></i> ${emp.noHp || '-'}</span>
+                                <span title="Email" class="truncate max-w-[120px]"><i class="fa-solid fa-envelope"></i> ${emp.email || '-'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm text-gray-700">${emp.nip ? emp.nip : '-'}</div>
+                            <div class="text-xs text-gray-500">NIK: ${emp.nik}</div>
+                        </td>
+                        <td class="p-4">${emp.gender || '-'}</td>
+                        <td class="p-4">
+                            <div class="text-sm font-medium text-gray-700">${emp.pendidikan}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-[200px]" title="${emp.namaSekolah}">${emp.namaSekolah || '-'}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm font-medium text-gray-800">${emp.profesi}</div>
+                            <div class="text-xs text-gray-500">${emp.golongan}</div>
+                        </td>
+                        <td class="p-4 text-sm text-gray-700">${emp.jabatanTmt || '-'}</td>
+                        <td class="p-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                                emp.statusASN.includes('PNS') ? 'bg-emerald-100 text-emerald-800' :
+                                emp.statusASN === 'PPPK' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                            }">${emp.statusASN}</span>
+                            <div class="text-xs text-gray-500 mt-1">${emp.statusOAP || 'Non OAP'}</div>
+                            ${badgeJalur}
+                        </td>
+                        <td class="p-4">
+                            ${emp.statusAktif === 'Non-Aktif' 
+                                ? `<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">Non-Aktif</span><div class="text-[10px] text-red-600 mt-1">${emp.alasanNonAktif || ''}</div>`
+                                : `<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">Aktif</span>`
+                            }
+                        </td>
+                        <td class="p-4 text-xs">
+                            <div class="mb-1">${strStatus}</div>
+                            <div>${sipStatus}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm font-semibold text-teal-700">${faskesName}</div>
+                            ${penempatanKhusus}
+                        </td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editPegawai('${emp.id}')" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="confirmDelete('pegawai', '${emp.id}', '${emp.name.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center transition-colors" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        };
+
+        window.renderStatistik = function() {
+            let activeEmployees = employees.filter(emp => emp.statusAktif !== 'Non-Aktif');
+            
+            const kategorikanPendidikan = (teks) => {
+                if (!teks) return 'Tidak Diketahui';
+                const t = teks.toUpperCase();
+                if (t.includes('S3') || t.includes('DOKTOR')) return 'S3 (Doktoral)';
+                if (t.includes('S2') || t.includes('MAGISTER') || t.includes('M.KES') || t.includes('M.KEP')) return 'S2 (Magister)';
+                if (t.includes('SPESIALIS') || t.includes('SP.')) return 'Spesialis';
+                if (t.includes('PROFESI') || t.includes('NERS') || t.includes('APT')) return 'Profesi (Ners/Apt/dll)';
+                if (t === 'S1' || t.includes('S1') || t.includes('SARJANA') || t.includes('S.KEP') || t.includes('S.KM')) return 'S1 (Sarjana)';
+                if (t === 'D4' || t.includes('D4') || t.includes('D-IV') || t.includes('DIPLOMA IV')) return 'D4 (Diploma IV)';
+                if (t.includes('D3') || t.includes('D-III') || t.includes('A.MD') || t.includes('AMK') || t.includes('AM.KEB')) return 'D3 (Diploma Tiga)';
+                if (t.includes('D1') || t.includes('D2') || t.includes('D-I ') || t.includes('D-II')) return 'D1 / D2 (Diploma)';
+                if (t.includes('SMA') || t.includes('SMK') || t.includes('SLTA') || t.includes('SPK') || t.includes('STM')) return 'SMA / SMK / Sederajat';
+                if (t.includes('SMP') || t.includes('SLTP')) return 'SMP / Sederajat';
+                if (t.includes('SD ') || t.includes('SEKOLAH DASAR')) return 'SD / Sederajat';
+                return 'Lainnya / Tidak Spesifik';
+            };
+
+            const profesiStats = {};
+            const pendidikanStats = {};
+            const golonganStats = {};
+            const penugasanKhususStats = {};
+
+            const semuaProfesi = [...new Set(Object.values(jenisTenagaByPendidikan).flat())];
+            
+            semuaProfesi.forEach(p => {
+                profesiStats[p] = { 
+                    total: 0, 
+                    faskes: {}, 
+                    gender: { 'Laki-laki': 0, 'Perempuan': 0 }, 
+                    oapStatus: { 'OAP': 0, 'Non-OAP': 0 } 
+                };
+            });
+
+            activeEmployees.forEach(emp => {
+                const faskesData = faskesList.find(f => f.id === emp.faskesId);
+                const faskesName = faskesData ? faskesData.name : 'Tidak Diketahui';
+
+                if (emp.profesi) {
+                    if (!profesiStats[emp.profesi]) {
+                         profesiStats[emp.profesi] = { 
+                            total: 0, 
+                            faskes: {}, 
+                            gender: { 'Laki-laki': 0, 'Perempuan': 0 }, 
+                            oapStatus: { 'OAP': 0, 'Non-OAP': 0 } 
+                        };
+                    }
+                    const p = profesiStats[emp.profesi];
+                    p.total++;
+                    if (!p.faskes[faskesName]) p.faskes[faskesName] = 0;
+                    p.faskes[faskesName]++;
+                    
+                    const jk = emp.gender === 'L' ? 'Laki-laki' : 'Perempuan';
+                    p.gender[jk]++;
+                    
+                    const oap = (emp.statusOAP === 'OAP') ? 'OAP' : 'Non-OAP';
+                    p.oapStatus[oap]++;
+                }
+
+                const pend = kategorikanPendidikan(emp.pendidikan);
+                if (!pendidikanStats[pend]) {
+                    pendidikanStats[pend] = { total: 0, faskes: {} };
+                }
+                pendidikanStats[pend].total++;
+                if (!pendidikanStats[pend].faskes[faskesName]) pendidikanStats[pend].faskes[faskesName] = 0;
+                pendidikanStats[pend].faskes[faskesName]++;
+
+                const gol = emp.golongan || 'Tidak Diketahui';
+                if (!golonganStats[gol]) {
+                    golonganStats[gol] = { total: 0, faskes: {} };
+                }
+                golonganStats[gol].total++;
+                if (!golonganStats[gol].faskes[faskesName]) golonganStats[gol].faskes[faskesName] = 0;
+                golonganStats[gol].faskes[faskesName]++;
+
+                if (emp.statusASN === 'Penugasan Khusus') {
+                    if (!penugasanKhususStats[faskesName]) {
+                        penugasanKhususStats[faskesName] = { total: 0, profesi: {} };
+                    }
+                    penugasanKhususStats[faskesName].total++;
+                    
+                    const prof = emp.profesi || 'Tidak Diketahui';
+                    if (!penugasanKhususStats[faskesName].profesi[prof]) {
+                        penugasanKhususStats[faskesName].profesi[prof] = 0;
+                    }
+                    penugasanKhususStats[faskesName].profesi[prof]++;
+                }
+            });
+
+            const nakesContainer = document.getElementById('stats-nakes-container');
+            if (nakesContainer) {
+                nakesContainer.innerHTML = '';
+                const sortedProfesi = Object.entries(profesiStats).sort((a,b) => b[1].total - a[1].total);
+                
+                sortedProfesi.forEach(([profesi, data]) => {
+                    if (data.total > 0) {
+                        nakesContainer.innerHTML += `
+                            <details class="group bg-white rounded-xl mb-3 border border-transparent hover:border-teal-100 hover:bg-teal-50/20 transition-colors">
+                                <summary class="cursor-pointer outline-none flex flex-col p-3">
+                                    <div class="flex justify-between items-center text-sm mb-2">
+                                        <span class="font-medium text-gray-700 flex items-center gap-2">
+                                            <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
+                                            ${profesi}
+                                        </span>
+                                        <span class="font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded shadow-sm text-xs">${data.total}</span>
+                                    </div>
+                                </summary>
+                                <div class="px-3 pb-3 text-[11px] text-gray-600 space-y-3">
+                                    <div class="bg-gray-50 p-2 rounded-lg">
+                                        <div class="font-bold text-gray-800 uppercase mb-1">Persebaran Faskes</div>
+                                        ${Object.entries(data.faskes).map(([name, count]) => 
+                                            `<div class="flex justify-between"><span>${name}</span><span class="font-bold">${count}</span></div>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="bg-blue-50 p-2 rounded-lg">
+                                            <div class="font-bold text-blue-800 uppercase mb-1">Gender</div>
+                                            <div class="flex justify-between"><span>L</span><span>${data.gender['Laki-laki']}</span></div>
+                                            <div class="flex justify-between"><span>P</span><span>${data.gender['Perempuan']}</span></div>
+                                        </div>
+                                        <div class="bg-amber-50 p-2 rounded-lg">
+                                            <div class="font-bold text-amber-800 uppercase mb-1">Status</div>
+                                            <div class="flex justify-between"><span>OAP</span><span>${data.oapStatus['OAP']}</span></div>
+                                            <div class="flex justify-between"><span>Non</span><span>${data.oapStatus['Non-OAP']}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        `;
+                    }
+                });
+            }
+
+            const pendContainer = document.getElementById('stats-pendidikan-container');
+            if (pendContainer) {
+                pendContainer.innerHTML = '';
+                const sortedPend = Object.entries(pendidikanStats).sort((a,b) => b[1].total - a[1].total);
+                
+                sortedPend.forEach(([pendidikan, data]) => {
+                    pendContainer.innerHTML += `
+                        <details class="group bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors">
+                            <summary class="cursor-pointer outline-none flex justify-between items-center p-3 text-sm font-medium text-gray-700">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
+                                    ${pendidikan}
+                                </span>
+                                <span class="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded text-xs">${data.total}</span>
+                            </summary>
+                            <div class="px-3 pb-3 pt-1 text-[11px] text-gray-600">
+                                <div class="bg-white p-2 rounded border border-gray-100 space-y-1">
+                                    <div class="font-bold text-gray-800 border-b border-gray-100 pb-1 mb-1">Sebaran Faskes</div>
+                                    ${Object.entries(data.faskes).sort((a,b) => b[1] - a[1]).map(([name, count]) => 
+                                        `<div class="flex justify-between"><span>${name}</span><span class="font-bold text-gray-800">${count}</span></div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        </details>
+                    `;
+                });
+            }
+
+            const golContainer = document.getElementById('stats-golongan-container');
+            if (golContainer) {
+                golContainer.innerHTML = '';
+                const sortedGol = Object.entries(golonganStats).sort((a,b) => b[1].total - a[1].total);
+                
+                sortedGol.forEach(([golongan, data]) => {
+                    golContainer.innerHTML += `
+                        <details class="group bg-gray-50 rounded-lg border border-gray-100 hover:border-teal-200 hover:bg-teal-50/30 transition-colors">
+                            <summary class="cursor-pointer outline-none flex justify-between items-center p-3 text-sm font-medium text-gray-700">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
+                                    ${golongan}
+                                </span>
+                                <span class="font-bold text-teal-600 bg-teal-100 px-2 py-0.5 rounded text-xs">${data.total}</span>
+                            </summary>
+                            <div class="px-3 pb-3 pt-1 text-[11px] text-gray-600">
+                                <div class="bg-white p-2 rounded border border-gray-100 space-y-1">
+                                    <div class="font-bold text-gray-800 border-b border-gray-100 pb-1 mb-1">Sebaran Faskes</div>
+                                    ${Object.entries(data.faskes).sort((a,b) => b[1] - a[1]).map(([name, count]) => 
+                                        `<div class="flex justify-between"><span>${name}</span><span class="font-bold text-gray-800">${count}</span></div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        </details>
+                    `;
+                });
+            }
+
+            const penugasanContainer = document.getElementById('stats-penugasan-khusus-container');
+            if (penugasanContainer) {
+                penugasanContainer.innerHTML = '';
+                const sortedPenugasan = Object.entries(penugasanKhususStats).sort((a,b) => b[1].total - a[1].total);
+                
+                if (sortedPenugasan.length === 0) {
+                    penugasanContainer.innerHTML = '<div class="text-sm text-gray-500 italic p-4 text-center border border-dashed border-gray-200 rounded-xl bg-gray-50">Belum ada data tenaga Penugasan Khusus yang aktif.</div>';
+                } else {
+                    sortedPenugasan.forEach(([faskes, data]) => {
+                        penugasanContainer.innerHTML += `
+                            <details class="group bg-rose-50/30 rounded-lg border border-rose-100 hover:border-rose-300 hover:bg-rose-50 transition-colors">
+                                <summary class="cursor-pointer outline-none flex justify-between items-center p-3 text-sm font-medium text-rose-800">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-chevron-right text-xs text-rose-400 group-open:rotate-90 transition-transform"></i>
+                                        ${faskes}
+                                    </span>
+                                    <span class="font-bold text-rose-600 bg-white border border-rose-100 px-2 py-0.5 rounded text-xs shadow-sm">${data.total}</span>
+                                </summary>
+                                <div class="px-3 pb-3 pt-1 text-[11px] text-gray-700">
+                                    <div class="bg-white p-2 rounded border border-rose-100 space-y-1 shadow-sm">
+                                        <div class="font-bold text-rose-800 border-b border-rose-100 pb-1 mb-1">Rincian Jenis Tenaga</div>
+                                        ${Object.entries(data.profesi).sort((a,b) => b[1] - a[1]).map(([prof, count]) => 
+                                            `<div class="flex justify-between items-center">
+                                                <span>${prof}</span>
+                                                <span class="font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded">${count}</span>
+                                            </div>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            </details>
+                        `;
+                    });
+                }
+            }
+        }
+
+        window.renderFaskes = function() {
+            const grid = document.getElementById('faskes-grid');
+            if(!grid) return;
+            
+            const search = document.getElementById('search-faskes') ? document.getElementById('search-faskes').value.toLowerCase() : '';
+            grid.innerHTML = '';
+
+            const filtered = faskesList.filter(f => {
+                const isKlinikOrApotek = 
+                    f.name.toLowerCase().includes('klinik') || 
+                    f.type.toLowerCase().includes('spesialis') || 
+                    f.type.toLowerCase().includes('klinik') ||
+                    f.name.toLowerCase().includes('apotek') ||
+                    f.name.toLowerCase().includes('apotik') ||
+                    f.type.toLowerCase().includes('apotek') ||
+                    f.type.toLowerCase().includes('apotik');
+                
+                const matchSearch = f.name.toLowerCase().includes(search) || f.address.toLowerCase().includes(search);
+                return matchSearch && !isKlinikOrApotek;
+            });
+
+            filtered.forEach(faskes => {
+                const faskesEmployees = employees.filter(emp => emp.faskesId === faskes.id && emp.statusAktif !== 'Non-Aktif');
+                const count = faskesEmployees.length;
+
+                let oap = 0, oapL = 0, oapP = 0;
+                let nonOap = 0, nonOapL = 0, nonOapP = 0;
+                let pns = 0, pppk = 0, k2 = 0, nonAsn = 0;
+
+                faskesEmployees.forEach(emp => {
+                    if(emp.statusOAP === 'OAP') {
+                        oap++;
+                        if (emp.gender === 'L') oapL++; else oapP++;
+                    } else {
+                        nonOap++;
+                        if (emp.gender === 'L') nonOapL++; else nonOapP++;
+                    }
+
+                    if(emp.statusASN === 'PNS' || emp.statusASN === 'CPNS') {
+                        pns++;
+                    } else if(emp.statusASN === 'PPPK') {
+                        pppk++;
+                    } else if(emp.statusASN === 'K2') {
+                        k2++;
+                    } else {
+                        nonAsn++;
+                    }
+                });
+
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col h-full">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-xl">
+                                <i class="fa-solid fa-hospital-user"></i>
+                            </div>
+                            <span class="bg-teal-50 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-lg border border-teal-100">${faskes.type}</span>
+                        </div>
+                        <h3 class="font-bold text-gray-800 text-lg mb-1">${faskes.name}</h3>
+                        <p class="text-sm text-gray-500 mb-4 flex items-center gap-1.5"><i class="fa-solid fa-map-location-dot"></i> ${faskes.address}</p>
+                        
+                        <div class="grid grid-cols-4 gap-2 mb-3 text-center">
+                            <div class="bg-emerald-50 rounded-lg py-1.5 border border-emerald-100">
+                                <div class="text-[9px] font-bold text-emerald-800 uppercase">PNS</div>
+                                <div class="font-bold text-emerald-600">${pns}</div>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg py-1.5 border border-blue-100">
+                                <div class="text-[9px] font-bold text-blue-800 uppercase">PPPK</div>
+                                <div class="font-bold text-blue-600">${pppk}</div>
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg py-1.5 border border-yellow-100">
+                                <div class="text-[9px] font-bold text-yellow-800 uppercase">K2</div>
+                                <div class="font-bold text-yellow-600">${k2}</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg py-1.5 border border-gray-200">
+                                <div class="text-[9px] font-bold text-gray-700 uppercase">NON-ASN</div>
+                                <div class="font-bold text-gray-600">${nonAsn}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 grid grid-cols-2 gap-3 text-xs">
+                            <div class="bg-green-50 p-2.5 rounded-xl border border-green-100 flex flex-col justify-between">
+                                <div class="font-bold text-green-800 mb-1 flex justify-between">
+                                    <span>OAP</span>
+                                    <span>${oap}</span>
+                                </div>
+                                <div class="text-[10px] text-green-600 flex justify-between font-medium border-t border-green-200/60 pt-1 mt-1">
+                                    <span>L: ${oapL}</span>
+                                    <span>P: ${oapP}</span>
+                                </div>
+                            </div>
+                            <div class="bg-orange-50 p-2.5 rounded-xl border border-orange-100 flex flex-col justify-between">
+                                <div class="font-bold text-orange-800 mb-1 flex justify-between">
+                                    <span>Non OAP</span>
+                                    <span>${nonOap}</span>
+                                </div>
+                                <div class="text-[10px] text-orange-600 flex justify-between font-medium border-t border-orange-200/60 pt-1 mt-1">
+                                    <span>L: ${nonOapL}</span>
+                                    <span>P: ${nonOapP}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-gray-50 flex justify-between items-center">
+                            <span class="text-sm text-gray-500 font-medium">Total Pegawai Aktif:</span>
+                            <span class="font-bold text-lg text-primary">${count}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full py-10 text-center text-gray-500">Faskes tidak ditemukan.</div>';
+            }
+        }
+
+        window.renderKlinik = function() {
+            const grid = document.getElementById('klinik-grid');
+            if (!grid) return;
+            
+            const searchInput = document.getElementById('search-klinik') ? document.getElementById('search-klinik').value.toLowerCase() : '';
+            grid.innerHTML = '';
+            
+            const klinikList = faskesList.filter(f => 
+                f.name.toLowerCase().includes('klinik') || 
+                f.type.toLowerCase().includes('spesialis') || 
+                f.type.toLowerCase().includes('klinik') ||
+                f.name.toLowerCase().includes('apotek') ||
+                f.name.toLowerCase().includes('apotik') ||
+                f.type.toLowerCase().includes('apotek') ||
+                f.type.toLowerCase().includes('apotik')
+            );
+            
+            const filtered = klinikList.filter(k => k.name.toLowerCase().includes(searchInput));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-10 text-center text-gray-500">
+                    <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                    <p>Data klinik atau apotek tidak ditemukan.</p>
+                </div>`;
+            } else {
+                filtered.forEach(k => {
+                    const isApotek = k.name.toLowerCase().includes('apotek') || k.name.toLowerCase().includes('apotik') || k.type.toLowerCase().includes('apotek');
+                    const iconClass = isApotek ? 'fa-pills' : 'fa-house-chimney-medical';
+                    const bgColor = isApotek ? 'bg-emerald-50' : 'bg-purple-50';
+                    const iconColor = isApotek ? 'text-emerald-600' : 'text-purple-600';
+
+                    grid.innerHTML += `
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 rounded-xl ${bgColor} flex items-center justify-center ${iconColor} text-xl flex-shrink-0">
+                                <i class="fa-solid ${iconClass}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg">${k.name}</h3>
+                                <p class="text-xs font-medium ${iconColor} mb-1">${k.type}</p>
+                                <p class="text-xs text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i> ${k.address}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        };
+
+        window.toggleFormKlinik = function() {
+            const formContainer = document.getElementById('form-container-klinik');
+            if (formContainer) formContainer.classList.toggle('hidden');
+        };
+
+        window.submitKlinik = function(e) {
+            e.preventDefault();
+            
+            const nama = document.getElementById('input-nama-klinik').value;
+            const tipe = document.getElementById('input-tipe-klinik').value;
+            const alamat = document.getElementById('input-alamat-klinik').value;
+            
+            faskesList.push({
+                name: nama,
+                type: tipe,
+                address: alamat
+            });
+            
+            e.target.reset();
+            toggleFormKlinik();
+            
+            renderKlinik(); 
+            if (typeof renderFaskes === 'function') {
+                renderFaskes(); 
+            }
+            
+            showToast(`Berhasil! ${nama} telah ditambahkan.`);
+        };
+
+        window.populatePegawaiForNotaTugas = function() {
+            const select = document.getElementById('nt-pegawai');
+            if(!select) return;
+            select.innerHTML = '<option value="">-- Pilih Pegawai Aktif --</option>';
+            
+            const activeEmp = employees.filter(e => e.statusAktif !== 'Non-Aktif');
+            activeEmp.sort((a,b) => a.name.localeCompare(b.name)).forEach(emp => {
+                select.innerHTML += `<option value="${emp.id}">${emp.name} (NIP: ${emp.nip || '-'})</option>`;
+            });
+        }
+
+        window.handlePegawaiSelectForNT = function() {
+            const empId = document.getElementById('nt-pegawai').value;
+            const displayAsal = document.getElementById('nt-faskes-asal-display');
+            const hiddenAsalId = document.getElementById('nt-faskes-asal-id');
+            
+            if(!empId) {
+                displayAsal.value = ''; hiddenAsalId.value = ''; return;
+            }
+
+            const emp = employees.find(e => e.id === empId);
+            if(emp) {
+                const faskes = faskesList.find(f => f.id === emp.faskesId);
+                displayAsal.value = faskes ? faskes.name : 'Tidak Diketahui';
+                hiddenAsalId.value = emp.faskesId;
+            }
+        }
+
+        window.renderTableNotaTugas = function() {
+            const tbody = document.getElementById('table-notatugas-body');
+            if(!tbody) return;
+
+            const search = document.getElementById('search-notatugas').value.toLowerCase();
+            const filterStat = document.getElementById('filter-status-nota').value;
+
+            tbody.innerHTML = '';
+            
+            let filtered = notaTugasData.filter(nt => {
+                const empName = nt.pegawaiName ? nt.pegawaiName.toLowerCase() : '';
+                const noSurat = nt.nomorSurat ? nt.nomorSurat.toLowerCase() : '';
+                const matchSearch = empName.includes(search) || noSurat.includes(search);
+                
+                let matchStat = true;
+                if(filterStat) {
+                    if(filterStat === 'Berlaku') matchStat = nt.status === 'Berlaku';
+                    if(filterStat === 'Selesai/Dicabut') matchStat = ['Selesai', 'Dicabut'].includes(nt.status);
+                }
+                return matchSearch && matchStat;
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById('table-notatugas-empty').classList.remove('hidden');
+            } else {
+                document.getElementById('table-notatugas-empty').classList.add('hidden');
+                
+                filtered.sort((a,b) => new Date(b.tanggalSurat) - new Date(a.tanggalSurat));
+
+                filtered.forEach((nt, index) => {
+                    const faskesAsal = faskesList.find(f => f.id === nt.faskesAsalId)?.name || 'Unknown';
+                    const faskesTujuan = faskesList.find(f => f.id === nt.faskesTujuanId)?.name || 'Unknown';
+                    
+                    let statusColor = nt.status === 'Berlaku' ? 'bg-green-100 text-green-800' : 
+                                      nt.status === 'Selesai' ? 'bg-gray-100 text-gray-800' : 'bg-red-100 text-red-800';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="p-4">${index + 1}</td>
+                        <td class="p-4 font-bold text-gray-800">${nt.nomorSurat}<br><span class="text-xs font-normal text-gray-500">${nt.tanggalSurat}</span></td>
+                        <td class="p-4 font-medium text-blue-700">${nt.pegawaiName}</td>
+                        <td class="p-4 text-xs">${faskesAsal}</td>
+                        <td class="p-4 text-xs font-bold text-amber-700"><i class="fa-solid fa-arrow-right mr-1"></i> ${faskesTujuan}</td>
+                        <td class="p-4 text-sm">${nt.tmt}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${statusColor}">${nt.status}</span></td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editNotaTugas('${nt.id}')" class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-colors" title="Edit"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="confirmDelete('notatugas', '${nt.id}', '${nt.nomorSurat}')" class="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center transition-colors" title="Hapus"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        window.showAddNotaTugasModal = function() {
+            editingNotaTugasId = null;
+            document.getElementById('modal-nt-title').innerText = 'Buat Nota Tugas Baru';
+            document.getElementById('form-notatugas').reset();
+            
+            document.getElementById('nt-tahun').value = globalYear;
+            document.getElementById('nt-faskes-asal-display').value = '';
+            document.getElementById('nt-status').value = 'Berlaku';
+            
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-notatugas').classList.remove('hidden');
+        }
+
+        window.editNotaTugas = function(id) {
+            const nt = notaTugasData.find(n => n.id === id);
+            if(!nt) return;
+            editingNotaTugasId = id;
+            document.getElementById('modal-nt-title').innerText = 'Edit Nota Tugas';
+
+            document.getElementById('nt-tahun').value = nt.tahun || '2026';
+            document.getElementById('nt-nomor').value = nt.nomorSurat;
+            document.getElementById('nt-tanggal').value = nt.tanggalSurat;
+            document.getElementById('nt-pegawai').value = nt.pegawaiId;
+            handlePegawaiSelectForNT(); 
+            document.getElementById('nt-faskes-tujuan').value = nt.faskesTujuanId;
+            document.getElementById('nt-tmt').value = nt.tmt;
+            document.getElementById('nt-status').value = nt.status;
+            document.getElementById('nt-keterangan').value = nt.keterangan || '';
+
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-notatugas').classList.remove('hidden');
+        }
+
+        window.handleSaveNotaTugas = async function(e) {
+            e.preventDefault();
+            if(!user) return;
+
+            const empId = document.getElementById('nt-pegawai').value;
+            const emp = employees.find(e => e.id === empId);
+            if(!emp) { showToast("Pilih pegawai terlebih dahulu"); return; }
+
+            const ntData = {
+                tahun: document.getElementById('nt-tahun').value,
+                nomorSurat: document.getElementById('nt-nomor').value,
+                tanggalSurat: document.getElementById('nt-tanggal').value,
+                pegawaiId: empId,
+                pegawaiName: emp.name,
+                faskesAsalId: document.getElementById('nt-faskes-asal-id').value,
+                faskesTujuanId: document.getElementById('nt-faskes-tujuan').value,
+                tmt: document.getElementById('nt-tmt').value,
+                status: document.getElementById('nt-status').value,
+                keterangan: document.getElementById('nt-keterangan').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                const ntRef = collection(db, 'artifacts', appId, 'public', 'data', 'nota_tugas');
+                if (editingNotaTugasId) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'nota_tugas', editingNotaTugasId), ntData, { merge: true });
+                    showToast("Nota Tugas berhasil diperbarui!");
+                } else {
+                    await setDoc(doc(ntRef), ntData);
+                    showToast("Nota Tugas baru berhasil dibuat!");
+                }
+                closeModals();
+            } catch (error) { 
+                console.error(error); 
+                showToast("Gagal menyimpan Nota Tugas."); 
+            }
+        }
+
+        window.toggleMutasiMasukFields = function() {
+            const kategori = document.getElementById('input-kategori-masuk').value;
+            const containerAsal = document.getElementById('container-instansi-asal');
+            const containerSk = document.getElementById('container-sk-mutasi');
+            
+            if (kategori === 'Mutasi') {
+                containerAsal.classList.remove('hidden');
+                containerSk.classList.remove('hidden');
+            } else {
+                containerAsal.classList.add('hidden');
+                containerSk.classList.add('hidden');
+            }
+        }
+
+        window.toggleStatusNonAktif = function() {
+            const status = document.getElementById('input-status-aktif').value;
+            const alasanSelect = document.getElementById('input-alasan-nonaktif');
+            if (status === 'Non-Aktif') {
+                alasanSelect.disabled = false;
+                alasanSelect.required = true;
+                alasanSelect.classList.remove('bg-gray-100');
+                alasanSelect.classList.add('bg-white');
+            } else {
+                alasanSelect.disabled = true;
+                alasanSelect.required = false;
+                alasanSelect.value = '';
+                alasanSelect.classList.add('bg-gray-100');
+                alasanSelect.classList.remove('bg-white');
+            }
+        }
+
+        window.toggleStrSeumurHidup = function() {
+            const isChecked = document.getElementById('input-str-seumur-hidup').checked;
+            const kadaluarsaInput = document.getElementById('input-kadaluarsa-str');
+            if (isChecked) {
+                kadaluarsaInput.disabled = true;
+                kadaluarsaInput.value = '';
+                kadaluarsaInput.classList.add('bg-gray-100', 'opacity-50');
+            } else {
+                kadaluarsaInput.disabled = false;
+                kadaluarsaInput.classList.remove('bg-gray-100', 'opacity-50');
+            }
+        }
+
+        window.toggleDinkesFields = function() {
+            const faskesId = document.getElementById('input-faskes').value;
+            const containerDinkes = document.getElementById('container-dinkes');
+            const penempatanDinkes = document.getElementById('input-penempatan-dinkes');
+            const jabatanStaffDinkes = document.getElementById('input-jabatan-staff-dinkes');
+            
+            if (faskesId === 'r34') {
+                containerDinkes.classList.remove('hidden');
+            } else {
+                containerDinkes.classList.add('hidden');
+                if(penempatanDinkes) penempatanDinkes.value = '';
+                if(jabatanStaffDinkes) jabatanStaffDinkes.value = '';
+            }
+        }
+
+        window.showAddPegawaiModal = function() {
+            editingEmployeeId = null;
+            document.getElementById('modal-title').innerText = 'Input Data Pegawai Baru (Nominatif)';
+            document.getElementById('form-add-pegawai').reset();
+            
+            document.getElementById('input-tahun').value = globalYear;
+            document.getElementById('input-kategori-masuk').value = 'Baru';
+            document.getElementById('input-status-aktif').value = 'Aktif';
+            
+            const inputLainnya = document.getElementById('input-profesi-lainnya');
+            if(inputLainnya) {
+                inputLainnya.classList.add('hidden');
+                inputLainnya.value = '';
+                inputLainnya.required = false;
+            }
+
+            toggleMutasiMasukFields();
+            toggleStatusNonAktif();
+            toggleStrSeumurHidup();
+            toggleDinkesFields();
+            
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-pegawai').classList.remove('hidden');
+        }
+
+        window.editPegawai = function(id) {
+            const emp = employees.find(e => e.id === id);
+            if (!emp) return;
+
+            editingEmployeeId = id;
+            document.getElementById('modal-title').innerText = 'Edit Data Pegawai';
+            
+            document.getElementById('input-tahun').value = emp.tahun || '2026';
+            document.getElementById('input-nama').value = emp.name || '';
+            document.getElementById('input-ttl').value = emp.ttl || '';
+            document.getElementById('input-nip').value = emp.nip || '';
+            document.getElementById('input-nik').value = emp.nik || '';
+            document.getElementById('input-gender').value = emp.gender || 'L';
+            document.getElementById('input-agama').value = emp.agama || 'Kristen Protestan';
+            
+            document.getElementById('input-nohp').value = emp.noHp || '';
+            document.getElementById('input-email').value = emp.email || '';
+
+            document.getElementById('input-pendidikan').value = emp.pendidikan || '';
+            document.getElementById('input-nama-sekolah').value = emp.namaSekolah || '';
+            
+            updateJenisTenaga(emp.pendidikan || '', emp.profesi || '');
+
+            const daftarTenaga = jenisTenagaByPendidikan[emp.pendidikan] || [];
+            if (emp.profesi && !daftarTenaga.includes(emp.profesi)) {
+                document.getElementById('input-profesi-lainnya').value = emp.profesi;
+            }
+
+            document.getElementById('input-golongan').value = emp.golongan || 'Non ASN / Lainnya';
+            document.getElementById('input-kepegawaian').value = emp.statusASN || 'PNS';
+            document.getElementById('input-oap').value = emp.statusOAP || 'OAP';
+            document.getElementById('input-jabatan-tmt').value = emp.jabatanTmt || '';
+            document.getElementById('input-faskes').value = emp.faskesId || '';
+            
+            if (emp.faskesId === 'r34') {
+                document.getElementById('input-penempatan-dinkes').value = emp.penempatanDinkes || '';
+                document.getElementById('input-jabatan-staff-dinkes').value = emp.jabatanStaffDinkes || '';
+            } else {
+                document.getElementById('input-penempatan-dinkes').value = '';
+                document.getElementById('input-jabatan-staff-dinkes').value = '';
+            }
+            toggleDinkesFields();
+            
+            document.getElementById('input-kategori-masuk').value = emp.kategoriMasuk || 'Lama';
+            document.getElementById('input-instansi-asal').value = emp.instansiAsal || '';
+            document.getElementById('input-sk-mutasi').value = emp.skMutasi || '';
+            document.getElementById('input-tgl-mutasi').value = emp.tglMutasi || '';
+            toggleMutasiMasukFields();
+
+            document.getElementById('input-status-aktif').value = emp.statusAktif || 'Aktif';
+            document.getElementById('input-alasan-nonaktif').value = emp.alasanNonAktif || '';
+            toggleStatusNonAktif();
+
+            document.getElementById('input-str').value = emp.str || '';
+            document.getElementById('input-str-seumur-hidup').checked = emp.strSeumurHidup || false;
+            document.getElementById('input-tgl-str').value = emp.tglStr || '';
+            document.getElementById('input-kadaluarsa-str').value = emp.kadaluarsaStr || '';
+            toggleStrSeumurHidup();
+
+            document.getElementById('input-sip').value = emp.sip || '';
+            document.getElementById('input-tgl-sip').value = emp.tglSip || '';
+            document.getElementById('input-kadaluarsa-sip').value = emp.kadaluarsaSip || '';
+
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-pegawai').classList.remove('hidden');
+        }
+
+        window.handleAddPegawai = async function(e) {
+            e.preventDefault();
+            if(!user) {
+                showToast("Sesi tidak valid. Silakan muat ulang halaman.");
+                return;
+            }
+
+            let finalProfesi = document.getElementById('input-profesi').value;
+            if (finalProfesi === 'Lainnya') {
+                finalProfesi = document.getElementById('input-profesi-lainnya').value;
+            }
+
+            const empData = {
+                tahun: document.getElementById('input-tahun').value,
+                name: document.getElementById('input-nama').value,
+                ttl: document.getElementById('input-ttl').value,
+                nip: document.getElementById('input-nip').value,
+                nik: document.getElementById('input-nik').value,
+                gender: document.getElementById('input-gender').value,
+                agama: document.getElementById('input-agama').value,
+                noHp: document.getElementById('input-nohp').value,
+                email: document.getElementById('input-email').value,
+                pendidikan: document.getElementById('input-pendidikan').value,
+                namaSekolah: document.getElementById('input-nama-sekolah').value,
+                golongan: document.getElementById('input-golongan').value,
+                statusASN: document.getElementById('input-kepegawaian').value,
+                profesi: finalProfesi,
+                statusOAP: document.getElementById('input-oap').value,
+                jabatanTmt: document.getElementById('input-jabatan-tmt').value,
+                faskesId: document.getElementById('input-faskes').value,
+                
+                penempatanDinkes: document.getElementById('input-faskes').value === 'r34' ? document.getElementById('input-penempatan-dinkes').value : '',
+                jabatanStaffDinkes: document.getElementById('input-faskes').value === 'r34' ? document.getElementById('input-jabatan-staff-dinkes').value : '',
+
+                kategoriMasuk: document.getElementById('input-kategori-masuk').value,
+                instansiAsal: document.getElementById('input-instansi-asal').value,
+                skMutasi: document.getElementById('input-sk-mutasi').value,
+                tglMutasi: document.getElementById('input-tgl-mutasi').value,
+
+                statusAktif: document.getElementById('input-status-aktif').value,
+                alasanNonAktif: document.getElementById('input-alasan-nonaktif').value,
+
+                str: document.getElementById('input-str').value,
+                strSeumurHidup: document.getElementById('input-str-seumur-hidup').checked,
+                tglStr: document.getElementById('input-tgl-str').value,
+                kadaluarsaStr: document.getElementById('input-kadaluarsa-str').value,
+                
+                sip: document.getElementById('input-sip').value,
+                tglSip: document.getElementById('input-tgl-sip').value,
+                kadaluarsaSip: document.getElementById('input-kadaluarsa-sip').value,
+                
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                const employeesRef = collection(db, 'artifacts', appId, 'public', 'data', 'employees');
+                if (editingEmployeeId) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'employees', editingEmployeeId), empData, { merge: true });
+                    showToast("Data pegawai berhasil diperbarui!");
+                } else {
+                    const newDocRef = doc(employeesRef);
+                    await setDoc(newDocRef, empData);
+                    showToast("Pegawai baru berhasil ditambahkan!");
+                }
+                closeModals();
+            } catch (error) {
+                console.error("Error saving data: ", error);
+                showToast("Gagal menyimpan data ke Cloud.");
+            }
+        }
+
+        window.confirmDelete = function(type, id, name) {
+            deleteTarget = { type, id, name };
+            document.getElementById('delete-item-name').innerText = `${type === 'pegawai' ? 'Pegawai' : 'Nota Tugas'} "${name}"`;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-delete').classList.remove('hidden');
+        }
+
+        window.executeDelete = async function() {
+            if(!user || !deleteTarget.id) return;
+            try {
+                const collectionName = deleteTarget.type === 'pegawai' ? 'employees' : 'nota_tugas';
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', collectionName, deleteTarget.id));
+                showToast(`Data ${deleteTarget.type === 'pegawai' ? 'pegawai' : 'nota tugas'} berhasil dihapus!`);
+                closeModals();
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                showToast("Gagal menghapus data.");
+            }
+        }
+
+        window.closeModals = function() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('modal-pegawai').classList.add('hidden');
+            document.getElementById('modal-notatugas').classList.add('hidden');
+            document.getElementById('modal-delete').classList.add('hidden');
+            editingEmployeeId = null;
+            editingNotaTugasId = null;
+            deleteTarget = { type: null, id: null, name: '' };
+        }
+
+        window.showToast = function(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            if (toastMsg) toastMsg.innerText = msg;
+            if (toast) {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+        }
+
+        window.downloadDashboardPDF = function() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.text(`Ringkasan Data SDMK Kab. Nabire`, 14, 20);
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Tahun Data: ${globalYear} | Tanggal Unduh: ${new Date().toLocaleDateString('id-ID')}`, 14, 28);
+                
+                const activeEmployees = employees.filter(emp => emp.statusAktif !== 'Non-Aktif');
+                
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text("Statistik Utama (Pegawai Aktif)", 14, 40);
+
+                const statsData = [
+                    ["Total Pegawai Aktif", activeEmployees.length.toString()],
+                    ["Total Unit / Faskes", faskesList.length.toString()],
+                    ["OAP (Papua)", activeEmployees.filter(e => e.statusOAP === 'OAP').length.toString()],
+                    ["Non OAP", activeEmployees.filter(e => e.statusOAP !== 'OAP').length.toString()],
+                    ["Mutasi Masuk", activeEmployees.filter(e => e.kategoriMasuk === 'Mutasi').length.toString()],
+                    ["ASN (PNS/CPNS)", activeEmployees.filter(e => e.statusASN === 'PNS' || e.statusASN === 'CPNS').length.toString()],
+                    ["PPPK", activeEmployees.filter(e => e.statusASN === 'PPPK').length.toString()],
+                    ["K2 / BLUD / Non-ASN", activeEmployees.filter(e => ['K2', 'BLUD', 'Magang/Honorer'].includes(e.statusASN)).length.toString()]
+                ];
+
+                doc.autoTable({
+                    startY: 45,
+                    head: [['Indikator', 'Jumlah']],
+                    body: statsData,
+                    theme: 'grid',
+                    headStyles: { fillColor: [13, 148, 136] }
+                });
+
+                doc.save(`Ringkasan_SDMK_Nabire_${globalYear}.pdf`);
+                showToast("PDF berhasil diunduh.");
+            } catch (err) {
+                console.error("PDF Error:", err);
+                showToast("Terjadi kesalahan saat membuat PDF.");
+            }
+        }
+
+        window.downloadAllPegawaiExcel = function() {
+            if (!employees || employees.length === 0) {
+                showToast("Tidak ada data untuk diunduh pada tahun ini.");
+                return;
+            }
+
+            const exportData = employees.map((emp, i) => {
+                const faskes = faskesList.find(f => f.id === emp.faskesId);
+                return {
+                    "No": i + 1,
+                    "Tahun Data": emp.tahun || '2026',
+                    "Nama Lengkap & Gelar": emp.name,
+                    "Tempat, Tanggal Lahir": emp.ttl,
+                    "NIP": emp.nip || '-',
+                    "NIK": emp.nik || '-',
+                    "Jenis Kelamin": emp.gender,
+                    "Agama": emp.agama || '-',
+                    "Nomor HP": emp.noHp || '-',
+                    "Email": emp.email || '-',
+                    "Pendidikan Terakhir": emp.pendidikan,
+                    "Institusi / Sekolah": emp.namaSekolah,
+                    "Golongan": emp.golongan,
+                    "Kepegawaian": emp.statusASN,
+                    "Jenis Tenaga": emp.profesi,
+                    "Jabatan Terakhir (TMT)": emp.jabatanTmt || '-',
+                    "Status OAP": emp.statusOAP,
+                    "Jalur Masuk": emp.kategoriMasuk === 'Mutasi' ? 'Mutasi Masuk' : (emp.kategoriMasuk === 'Baru' ? 'Rekrutmen Baru' : 'Pegawai Lama'),
+                    "Instansi Asal": emp.instansiAsal || '-',
+                    "No SK Mutasi": emp.skMutasi || '-',
+                    "TMT Mutasi": emp.tglMutasi || '-',
+                    "Status Aktif": emp.statusAktif || 'Aktif',
+                    "Alasan Non-Aktif": emp.alasanNonAktif || '-',
+                    "Unit Tugas (Faskes)": faskes ? faskes.name : '-',
+                    "Penempatan Khusus (Dinkes)": emp.penempatanDinkes || '-',
+                    "Jabatan Staff (Dinkes)": emp.jabatanStaffDinkes || '-',
+                    "No STR": emp.str || '-',
+                    "STR Seumur Hidup": emp.strSeumurHidup ? 'Ya' : 'Tidak',
+                    "Masa Berlaku STR": emp.strSeumurHidup ? 'Seumur Hidup' : (emp.kadaluarsaStr || '-'),
+                    "No SIP": emp.sip || '-',
+                    "Masa Berlaku SIP": emp.kadaluarsaSip || '-'
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, `Data_Pegawai_${globalYear}`);
+            
+            XLSX.writeFile(wb, `Data_Nominatif_SDMK_Nabire_${globalYear}.xlsx`);
+            showToast("Excel berhasil diunduh.");
+        }
+
+        initSelectOptions();
+        initAuth();
+        navigate('dashboard');
+    </script>
+</body>
+</html>
