@@ -203,19 +203,35 @@
                 </div>
 
                 <h3 class="text-lg font-bold text-gray-800 mt-10 mb-4">Distribusi Status Kepegawaian (Pegawai Aktif)</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-4">
+                    
+                    <!-- PNS Block -->
                     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-emerald-500 gap-1.5">
                         <div class="flex justify-between items-center">
-                            <span class="font-semibold text-gray-700 text-xs">PNS/CPNS</span>
-                            <span id="dash-asn" class="text-lg font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">0</span>
+                            <span class="font-semibold text-gray-700 text-xs">PNS</span>
+                            <span id="dash-pns" class="text-lg font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">0</span>
                         </div>
                         <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
-                            <span>L: <span id="dash-asn-l">0</span></span>
+                            <span>L: <span id="dash-pns-l">0</span></span>
                             <span class="text-gray-300">|</span>
-                            <span>P: <span id="dash-asn-p">0</span></span>
+                            <span>P: <span id="dash-pns-p">0</span></span>
                         </div>
                     </div>
                     
+                    <!-- CPNS Block -->
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-emerald-400 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">CPNS</span>
+                            <span id="dash-cpns" class="text-lg font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-cpns-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-cpns-p">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- PPPK Block -->
                     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-blue-500 gap-1.5">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-gray-700 text-xs">PPPK</span>
@@ -228,6 +244,7 @@
                         </div>
                     </div>
                     
+                    <!-- K2 Block -->
                     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-yellow-500 gap-1.5">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-gray-700 text-xs">K2</span>
@@ -240,18 +257,20 @@
                         </div>
                     </div>
                     
+                    <!-- PTT Block -->
                     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-indigo-500 gap-1.5">
                         <div class="flex justify-between items-center">
-                            <span class="font-semibold text-gray-700 text-xs">BLUD</span>
-                            <span id="dash-blud" class="text-lg font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">0</span>
+                            <span class="font-semibold text-gray-700 text-xs">PTT</span>
+                            <span id="dash-ptt" class="text-lg font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">0</span>
                         </div>
                         <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
-                            <span>L: <span id="dash-blud-l">0</span></span>
+                            <span>L: <span id="dash-ptt-l">0</span></span>
                             <span class="text-gray-300">|</span>
-                            <span>P: <span id="dash-blud-p">0</span></span>
+                            <span>P: <span id="dash-ptt-p">0</span></span>
                         </div>
                     </div>
                     
+                    <!-- Honorer Block -->
                     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-gray-500 gap-1.5">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-gray-700 text-xs">Honorer</span>
@@ -261,6 +280,19 @@
                             <span>L: <span id="dash-nonasn-l">0</span></span>
                             <span class="text-gray-300">|</span>
                             <span>P: <span id="dash-nonasn-p">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Sukarela Block -->
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between border-l-4 border-l-pink-500 gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 text-xs">Sukarela</span>
+                            <span id="dash-sukarela" class="text-lg font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-lg">0</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>L: <span id="dash-sukarela-l">0</span></span>
+                            <span class="text-gray-300">|</span>
+                            <span>P: <span id="dash-sukarela-p">0</span></span>
                         </div>
                     </div>
                 </div>
@@ -343,24 +375,35 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="font-bold text-lg text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-user-nurse text-primary"></i> Rincian Jenis Tenaga Kesehatan</h3>
-                        <div id="stats-nakes-container" class="space-y-5 max-h-[600px] overflow-y-auto pr-3 hide-scroll">
-                            <!-- JS will populate -->
+                    <!-- Kolom Kiri -->
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-lg text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-user-nurse text-primary"></i> Rincian Jenis Tenaga Kesehatan</h3>
+                            <div id="stats-nakes-container" class="space-y-5 max-h-[600px] overflow-y-auto pr-3 hide-scroll">
+                                <!-- JS will populate -->
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-id-badge text-indigo-500"></i> Distribusi Status Kepegawaian</h3>
+                            <div id="stats-kepegawaian-container" class="space-y-3 max-h-[400px] overflow-y-auto pr-2 hide-scroll">
+                                <!-- JS will populate -->
+                            </div>
                         </div>
                     </div>
                     
+                    <!-- Kolom Kanan -->
                     <div class="space-y-6">
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                             <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-tie text-blue-500"></i> Ringkasan Tingkat Pendidikan</h3>
-                            <div id="stats-pendidikan-container" class="space-y-3">
+                            <div id="stats-pendidikan-container" class="space-y-3 max-h-[400px] overflow-y-auto pr-2 hide-scroll">
                                 <!-- JS will populate -->
                             </div>
                         </div>
 
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                             <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-layer-group text-teal-600"></i> Distribusi Pangkat / Golongan</h3>
-                            <div id="stats-golongan-container" class="space-y-3">
+                            <div id="stats-golongan-container" class="space-y-3 max-h-[400px] overflow-y-auto pr-2 hide-scroll">
                                 <!-- JS will populate -->
                             </div>
                         </div>
@@ -747,8 +790,9 @@
                                 <option value="CPNS">CPNS (Calon PNS)</option>
                                 <option value="PPPK">PPPK (P3K)</option>
                                 <option value="K2">Tenaga K2</option>
-                                <option value="BLUD">BLUD (Badan Layanan Umum Daerah)</option>
-                                <option value="Magang/Honorer">Magang / Honorer / PTT</option>
+                                <option value="PTT">PTT</option>
+                                <option value="Magang/Honorer">Magang / Honorer</option>
+                                <option value="Sukarela">Sukarela</option>
                                 <option value="Penugasan Khusus">Penugasan Khusus</option>
                             </select>
                         </div>
@@ -988,7 +1032,7 @@
         ];
 
         const jenisTenagaByPendidikan = {
-	    'SD': ['Cleaning Service', 'Sopir/Motores', 'Perkarya', 'Satpam'],
+            'SD': ['Cleaning Service', 'Sopir/Motores', 'Perkarya', 'Satpam'],
             'SMP': ['Cleaning Service', 'Sopir/Motores', 'Perkarya', 'Satpam'],
             'SMA/SMK': ['Satpam', 'Sopir/Motores', 'Cleaning Service', 'Perkarya', 'Pengelola Data'],
             'D3': ['Perawat', 'Bidan', 'Gizi', 'ATLM', 'Kesehatan Lingkungan', 'Promosi Kesehatan', 'Fisioterapi', 'Terapis Gigi & Mulut', 'Rekam Medik'],
@@ -1195,8 +1239,8 @@
             let oap = 0, nonOap = 0;
             let oapL = 0, oapP = 0, nonOapL = 0, nonOapP = 0;
 
-            let pns = 0, cpns = 0, pppk = 0, k2 = 0, blud = 0, magang = 0;
-            let asnL = 0, asnP = 0, pppkL = 0, pppkP = 0, k2L = 0, k2P = 0, bludL = 0, bludP = 0, magangL = 0, magangP = 0;
+            let pns = 0, cpns = 0, pppk = 0, k2 = 0, ptt = 0, magang = 0, sukarela = 0;
+            let pnsL = 0, pnsP = 0, cpnsL = 0, cpnsP = 0, pppkL = 0, pppkP = 0, k2L = 0, k2P = 0, pttL = 0, pttP = 0, magangL = 0, magangP = 0, sukarelaL = 0, sukarelaP = 0;
 
             activeEmployees.forEach(emp => {
                 if(emp.statusOAP === 'OAP') {
@@ -1207,26 +1251,33 @@
                     if (emp.gender === 'L') nonOapL++; else nonOapP++;
                 }
 
-                if(emp.statusASN === 'PNS' || emp.statusASN === 'CPNS') {
-                    if (emp.statusASN === 'PNS') pns++;
-                    if (emp.statusASN === 'CPNS') cpns++;
-                    if (emp.gender === 'L') asnL++; else asnP++;
+                if (emp.statusASN === 'PNS') {
+                    pns++;
+                    if (emp.gender === 'L') pnsL++; else pnsP++;
                 }
-                else if(emp.statusASN === 'PPPK') {
+                else if (emp.statusASN === 'CPNS') {
+                    cpns++;
+                    if (emp.gender === 'L') cpnsL++; else cpnsP++;
+                }
+                else if (emp.statusASN === 'PPPK') {
                     pppk++;
                     if (emp.gender === 'L') pppkL++; else pppkP++;
                 }
-                else if(emp.statusASN === 'K2') {
+                else if (emp.statusASN === 'K2') {
                     k2++;
                     if (emp.gender === 'L') k2L++; else k2P++;
                 }
-                else if(emp.statusASN === 'BLUD') {
-                    blud++;
-                    if (emp.gender === 'L') bludL++; else bludP++;
+                else if (emp.statusASN === 'PTT') {
+                    ptt++;
+                    if (emp.gender === 'L') pttL++; else pttP++;
                 }
-                else if(emp.statusASN === 'Magang/Honorer') {
+                else if (emp.statusASN === 'Magang/Honorer') {
                     magang++;
                     if (emp.gender === 'L') magangL++; else magangP++;
+                }
+                else if (emp.statusASN === 'Sukarela') {
+                    sukarela++;
+                    if (emp.gender === 'L') sukarelaL++; else sukarelaP++;
                 }
             });
 
@@ -1250,9 +1301,13 @@
             if (document.getElementById('dash-nonoap-l')) document.getElementById('dash-nonoap-l').innerText = nonOapL;
             if (document.getElementById('dash-nonoap-p')) document.getElementById('dash-nonoap-p').innerText = nonOapP;
             
-            if (document.getElementById('dash-asn')) document.getElementById('dash-asn').innerText = pns + cpns;
-            if (document.getElementById('dash-asn-l')) document.getElementById('dash-asn-l').innerText = asnL;
-            if (document.getElementById('dash-asn-p')) document.getElementById('dash-asn-p').innerText = asnP;
+            if (document.getElementById('dash-pns')) document.getElementById('dash-pns').innerText = pns;
+            if (document.getElementById('dash-pns-l')) document.getElementById('dash-pns-l').innerText = pnsL;
+            if (document.getElementById('dash-pns-p')) document.getElementById('dash-pns-p').innerText = pnsP;
+            
+            if (document.getElementById('dash-cpns')) document.getElementById('dash-cpns').innerText = cpns;
+            if (document.getElementById('dash-cpns-l')) document.getElementById('dash-cpns-l').innerText = cpnsL;
+            if (document.getElementById('dash-cpns-p')) document.getElementById('dash-cpns-p').innerText = cpnsP;
 
             if (document.getElementById('dash-pppk')) document.getElementById('dash-pppk').innerText = pppk;
             if (document.getElementById('dash-pppk-l')) document.getElementById('dash-pppk-l').innerText = pppkL;
@@ -1262,13 +1317,17 @@
             if (document.getElementById('dash-k2-l')) document.getElementById('dash-k2-l').innerText = k2L;
             if (document.getElementById('dash-k2-p')) document.getElementById('dash-k2-p').innerText = k2P;
 
-            if (document.getElementById('dash-blud')) document.getElementById('dash-blud').innerText = blud;
-            if (document.getElementById('dash-blud-l')) document.getElementById('dash-blud-l').innerText = bludL;
-            if (document.getElementById('dash-blud-p')) document.getElementById('dash-blud-p').innerText = bludP;
+            if (document.getElementById('dash-ptt')) document.getElementById('dash-ptt').innerText = ptt;
+            if (document.getElementById('dash-ptt-l')) document.getElementById('dash-ptt-l').innerText = pttL;
+            if (document.getElementById('dash-ptt-p')) document.getElementById('dash-ptt-p').innerText = pttP;
 
             if (document.getElementById('dash-nonasn')) document.getElementById('dash-nonasn').innerText = magang;
             if (document.getElementById('dash-nonasn-l')) document.getElementById('dash-nonasn-l').innerText = magangL;
             if (document.getElementById('dash-nonasn-p')) document.getElementById('dash-nonasn-p').innerText = magangP;
+            
+            if (document.getElementById('dash-sukarela')) document.getElementById('dash-sukarela').innerText = sukarela;
+            if (document.getElementById('dash-sukarela-l')) document.getElementById('dash-sukarela-l').innerText = sukarelaL;
+            if (document.getElementById('dash-sukarela-p')) document.getElementById('dash-sukarela-p').innerText = sukarelaP;
         }
 
         window.renderTablePegawai = function() {
@@ -1415,6 +1474,7 @@
             };
 
             const profesiStats = {};
+            const kepegawaianStats = {};
             const pendidikanStats = {};
             const golonganStats = {};
             const penugasanKhususStats = {};
@@ -1422,202 +1482,146 @@
             const semuaProfesi = [...new Set(Object.values(jenisTenagaByPendidikan).flat())];
             
             semuaProfesi.forEach(p => {
-                profesiStats[p] = { 
-                    total: 0, 
-                    faskes: {}, 
-                    gender: { 'Laki-laki': 0, 'Perempuan': 0 }, 
-                    oapStatus: { 'OAP': 0, 'Non-OAP': 0 } 
-                };
+                profesiStats[p] = { total: 0, faskes: {}, gender: { 'Laki-laki': 0, 'Perempuan': 0 }, oapStatus: { 'OAP': 0, 'Non-OAP': 0 } };
             });
 
             activeEmployees.forEach(emp => {
                 const faskesData = faskesList.find(f => f.id === emp.faskesId);
                 const faskesName = faskesData ? faskesData.name : 'Tidak Diketahui';
+                const jk = emp.gender === 'L' ? 'Laki-laki' : 'Perempuan';
+                const oap = (emp.statusOAP === 'OAP') ? 'OAP' : 'Non-OAP';
 
+                // 1. Stats Profesi
                 if (emp.profesi) {
                     if (!profesiStats[emp.profesi]) {
-                         profesiStats[emp.profesi] = { 
-                            total: 0, 
-                            faskes: {}, 
-                            gender: { 'Laki-laki': 0, 'Perempuan': 0 }, 
-                            oapStatus: { 'OAP': 0, 'Non-OAP': 0 } 
-                        };
+                        profesiStats[emp.profesi] = { total: 0, faskes: {}, gender: { 'Laki-laki': 0, 'Perempuan': 0 }, oapStatus: { 'OAP': 0, 'Non-OAP': 0 } };
                     }
-                    const p = profesiStats[emp.profesi];
-                    p.total++;
-                    if (!p.faskes[faskesName]) p.faskes[faskesName] = 0;
-                    p.faskes[faskesName]++;
-                    
-                    const jk = emp.gender === 'L' ? 'Laki-laki' : 'Perempuan';
-                    p.gender[jk]++;
-                    
-                    const oap = (emp.statusOAP === 'OAP') ? 'OAP' : 'Non-OAP';
-                    p.oapStatus[oap]++;
+                    profesiStats[emp.profesi].total++;
+                    profesiStats[emp.profesi].faskes[faskesName] = (profesiStats[emp.profesi].faskes[faskesName] || 0) + 1;
+                    profesiStats[emp.profesi].gender[jk]++;
+                    profesiStats[emp.profesi].oapStatus[oap]++;
                 }
 
+                // 2. Stats Kepegawaian
+                const statusPeg = emp.statusASN || 'Tidak Diketahui';
+                if (!kepegawaianStats[statusPeg]) {
+                    kepegawaianStats[statusPeg] = { total: 0, faskes: {}, gender: { 'Laki-laki': 0, 'Perempuan': 0 }, oapStatus: { 'OAP': 0, 'Non-OAP': 0 } };
+                }
+                kepegawaianStats[statusPeg].total++;
+                kepegawaianStats[statusPeg].faskes[faskesName] = (kepegawaianStats[statusPeg].faskes[faskesName] || 0) + 1;
+                kepegawaianStats[statusPeg].gender[jk]++;
+                kepegawaianStats[statusPeg].oapStatus[oap]++;
+
+                // 3. Stats Pendidikan
                 const pend = kategorikanPendidikan(emp.pendidikan);
                 if (!pendidikanStats[pend]) {
-                    pendidikanStats[pend] = { total: 0, faskes: {} };
+                    pendidikanStats[pend] = { total: 0, faskes: {}, gender: { 'Laki-laki': 0, 'Perempuan': 0 }, oapStatus: { 'OAP': 0, 'Non-OAP': 0 } };
                 }
                 pendidikanStats[pend].total++;
-                if (!pendidikanStats[pend].faskes[faskesName]) pendidikanStats[pend].faskes[faskesName] = 0;
-                pendidikanStats[pend].faskes[faskesName]++;
+                pendidikanStats[pend].faskes[faskesName] = (pendidikanStats[pend].faskes[faskesName] || 0) + 1;
+                pendidikanStats[pend].gender[jk]++;
+                pendidikanStats[pend].oapStatus[oap]++;
 
+                // 4. Stats Golongan
                 const gol = emp.golongan || 'Tidak Diketahui';
                 if (!golonganStats[gol]) {
-                    golonganStats[gol] = { total: 0, faskes: {} };
+                    golonganStats[gol] = { total: 0, faskes: {}, gender: { 'Laki-laki': 0, 'Perempuan': 0 }, oapStatus: { 'OAP': 0, 'Non-OAP': 0 } };
                 }
                 golonganStats[gol].total++;
-                if (!golonganStats[gol].faskes[faskesName]) golonganStats[gol].faskes[faskesName] = 0;
-                golonganStats[gol].faskes[faskesName]++;
+                golonganStats[gol].faskes[faskesName] = (golonganStats[gol].faskes[faskesName] || 0) + 1;
+                golonganStats[gol].gender[jk]++;
+                golonganStats[gol].oapStatus[oap]++;
 
+                // 5. Stats Penugasan Khusus
                 if (emp.statusASN === 'Penugasan Khusus') {
                     if (!penugasanKhususStats[faskesName]) {
-                        penugasanKhususStats[faskesName] = { total: 0, profesi: {} };
+                        penugasanKhususStats[faskesName] = { total: 0, profesi: {}, gender: { 'Laki-laki': 0, 'Perempuan': 0 }, oapStatus: { 'OAP': 0, 'Non-OAP': 0 } };
                     }
                     penugasanKhususStats[faskesName].total++;
-                    
                     const prof = emp.profesi || 'Tidak Diketahui';
-                    if (!penugasanKhususStats[faskesName].profesi[prof]) {
-                        penugasanKhususStats[faskesName].profesi[prof] = 0;
-                    }
-                    penugasanKhususStats[faskesName].profesi[prof]++;
+                    penugasanKhususStats[faskesName].profesi[prof] = (penugasanKhususStats[faskesName].profesi[prof] || 0) + 1;
+                    penugasanKhususStats[faskesName].gender[jk]++;
+                    penugasanKhususStats[faskesName].oapStatus[oap]++;
                 }
             });
 
+            const generateDetailHTML = (title, data, isKhusus = false) => `
+                <details class="group bg-white rounded-xl mb-3 border border-gray-200 hover:border-teal-200 hover:bg-teal-50/20 transition-colors shadow-sm">
+                    <summary class="cursor-pointer outline-none flex flex-col p-3">
+                        <div class="flex justify-between items-center text-sm mb-2">
+                            <span class="font-bold text-gray-700 flex items-center gap-2">
+                                <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
+                                ${title}
+                            </span>
+                            <span class="font-bold text-teal-600 bg-teal-50 border border-teal-100 px-2.5 py-0.5 rounded-lg shadow-sm text-xs">${data.total}</span>
+                        </div>
+                    </summary>
+                    <div class="px-3 pb-3 text-[11px] text-gray-600 space-y-3">
+                        <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <div class="font-bold text-gray-800 uppercase mb-2 border-b pb-1">${isKhusus ? 'Sebaran Profesi' : 'Sebaran Faskes'}</div>
+                            ${Object.entries(isKhusus ? data.profesi : data.faskes).sort((a,b) => b[1] - a[1]).map(([name, count]) => 
+                                `<div class="flex justify-between items-center py-0.5"><span class="truncate pr-2">${name}</span><span class="font-bold text-gray-800">${count}</span></div>`
+                            ).join('')}
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100">
+                                <div class="font-bold text-blue-800 uppercase mb-1 flex items-center gap-1"><i class="fa-solid fa-venus-mars"></i> Gender</div>
+                                <div class="flex justify-between py-0.5"><span>Laki-laki</span><span class="font-bold text-blue-900">${data.gender['Laki-laki']}</span></div>
+                                <div class="flex justify-between py-0.5"><span>Perempuan</span><span class="font-bold text-blue-900">${data.gender['Perempuan']}</span></div>
+                            </div>
+                            <div class="bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">
+                                <div class="font-bold text-amber-800 uppercase mb-1 flex items-center gap-1"><i class="fa-solid fa-earth-oceania"></i> Status</div>
+                                <div class="flex justify-between py-0.5"><span>OAP</span><span class="font-bold text-amber-900">${data.oapStatus['OAP']}</span></div>
+                                <div class="flex justify-between py-0.5"><span>Non-OAP</span><span class="font-bold text-amber-900">${data.oapStatus['Non-OAP']}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            `;
+
+            // Render Profesi Nakes
             const nakesContainer = document.getElementById('stats-nakes-container');
             if (nakesContainer) {
                 nakesContainer.innerHTML = '';
-                const sortedProfesi = Object.entries(profesiStats).sort((a,b) => b[1].total - a[1].total);
-                
-                sortedProfesi.forEach(([profesi, data]) => {
-                    if (data.total > 0) {
-                        nakesContainer.innerHTML += `
-                            <details class="group bg-white rounded-xl mb-3 border border-transparent hover:border-teal-100 hover:bg-teal-50/20 transition-colors">
-                                <summary class="cursor-pointer outline-none flex flex-col p-3">
-                                    <div class="flex justify-between items-center text-sm mb-2">
-                                        <span class="font-medium text-gray-700 flex items-center gap-2">
-                                            <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
-                                            ${profesi}
-                                        </span>
-                                        <span class="font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded shadow-sm text-xs">${data.total}</span>
-                                    </div>
-                                </summary>
-                                <div class="px-3 pb-3 text-[11px] text-gray-600 space-y-3">
-                                    <div class="bg-gray-50 p-2 rounded-lg">
-                                        <div class="font-bold text-gray-800 uppercase mb-1">Persebaran Faskes</div>
-                                        ${Object.entries(data.faskes).map(([name, count]) => 
-                                            `<div class="flex justify-between"><span>${name}</span><span class="font-bold">${count}</span></div>`
-                                        ).join('')}
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div class="bg-blue-50 p-2 rounded-lg">
-                                            <div class="font-bold text-blue-800 uppercase mb-1">Gender</div>
-                                            <div class="flex justify-between"><span>L</span><span>${data.gender['Laki-laki']}</span></div>
-                                            <div class="flex justify-between"><span>P</span><span>${data.gender['Perempuan']}</span></div>
-                                        </div>
-                                        <div class="bg-amber-50 p-2 rounded-lg">
-                                            <div class="font-bold text-amber-800 uppercase mb-1">Status</div>
-                                            <div class="flex justify-between"><span>OAP</span><span>${data.oapStatus['OAP']}</span></div>
-                                            <div class="flex justify-between"><span>Non</span><span>${data.oapStatus['Non-OAP']}</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        `;
-                    }
+                Object.entries(profesiStats).sort((a,b) => b[1].total - a[1].total).forEach(([title, data]) => {
+                    if (data.total > 0) nakesContainer.innerHTML += generateDetailHTML(title, data);
                 });
             }
 
+            // Render Kepegawaian
+            const kepegawaianContainer = document.getElementById('stats-kepegawaian-container');
+            if (kepegawaianContainer) {
+                kepegawaianContainer.innerHTML = '';
+                Object.entries(kepegawaianStats).sort((a,b) => b[1].total - a[1].total).forEach(([title, data]) => {
+                    kepegawaianContainer.innerHTML += generateDetailHTML(title, data);
+                });
+            }
+
+            // Render Pendidikan
             const pendContainer = document.getElementById('stats-pendidikan-container');
             if (pendContainer) {
                 pendContainer.innerHTML = '';
-                const sortedPend = Object.entries(pendidikanStats).sort((a,b) => b[1].total - a[1].total);
-                
-                sortedPend.forEach(([pendidikan, data]) => {
-                    pendContainer.innerHTML += `
-                        <details class="group bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors">
-                            <summary class="cursor-pointer outline-none flex justify-between items-center p-3 text-sm font-medium text-gray-700">
-                                <span class="flex items-center gap-2">
-                                    <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
-                                    ${pendidikan}
-                                </span>
-                                <span class="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded text-xs">${data.total}</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1 text-[11px] text-gray-600">
-                                <div class="bg-white p-2 rounded border border-gray-100 space-y-1">
-                                    <div class="font-bold text-gray-800 border-b border-gray-100 pb-1 mb-1">Sebaran Faskes</div>
-                                    ${Object.entries(data.faskes).sort((a,b) => b[1] - a[1]).map(([name, count]) => 
-                                        `<div class="flex justify-between"><span>${name}</span><span class="font-bold text-gray-800">${count}</span></div>`
-                                    ).join('')}
-                                </div>
-                            </div>
-                        </details>
-                    `;
+                Object.entries(pendidikanStats).sort((a,b) => b[1].total - a[1].total).forEach(([title, data]) => {
+                    pendContainer.innerHTML += generateDetailHTML(title, data);
                 });
             }
 
-            const golContainer = document.getElementById('stats-golongan-container');
-            if (golContainer) {
-                golContainer.innerHTML = '';
-                const sortedGol = Object.entries(golonganStats).sort((a,b) => b[1].total - a[1].total);
-                
-                sortedGol.forEach(([golongan, data]) => {
-                    golContainer.innerHTML += `
-                        <details class="group bg-gray-50 rounded-lg border border-gray-100 hover:border-teal-200 hover:bg-teal-50/30 transition-colors">
-                            <summary class="cursor-pointer outline-none flex justify-between items-center p-3 text-sm font-medium text-gray-700">
-                                <span class="flex items-center gap-2">
-                                    <i class="fa-solid fa-chevron-right text-xs text-gray-400 group-open:rotate-90 transition-transform"></i>
-                                    ${golongan}
-                                </span>
-                                <span class="font-bold text-teal-600 bg-teal-100 px-2 py-0.5 rounded text-xs">${data.total}</span>
-                            </summary>
-                            <div class="px-3 pb-3 pt-1 text-[11px] text-gray-600">
-                                <div class="bg-white p-2 rounded border border-gray-100 space-y-1">
-                                    <div class="font-bold text-gray-800 border-b border-gray-100 pb-1 mb-1">Sebaran Faskes</div>
-                                    ${Object.entries(data.faskes).sort((a,b) => b[1] - a[1]).map(([name, count]) => 
-                                        `<div class="flex justify-between"><span>${name}</span><span class="font-bold text-gray-800">${count}</span></div>`
-                                    ).join('')}
-                                </div>
-                            </div>
-                        </details>
-                    `;
+            // Render Golongan
+            const golonganContainer = document.getElementById('stats-golongan-container');
+            if (golonganContainer) {
+                golonganContainer.innerHTML = '';
+                Object.entries(golonganStats).sort((a,b) => b[1].total - a[1].total).forEach(([title, data]) => {
+                    golonganContainer.innerHTML += generateDetailHTML(title, data);
                 });
             }
 
-            const penugasanContainer = document.getElementById('stats-penugasan-khusus-container');
-            if (penugasanContainer) {
-                penugasanContainer.innerHTML = '';
-                const sortedPenugasan = Object.entries(penugasanKhususStats).sort((a,b) => b[1].total - a[1].total);
-                
-                if (sortedPenugasan.length === 0) {
-                    penugasanContainer.innerHTML = '<div class="text-sm text-gray-500 italic p-4 text-center border border-dashed border-gray-200 rounded-xl bg-gray-50">Belum ada data tenaga Penugasan Khusus yang aktif.</div>';
-                } else {
-                    sortedPenugasan.forEach(([faskes, data]) => {
-                        penugasanContainer.innerHTML += `
-                            <details class="group bg-rose-50/30 rounded-lg border border-rose-100 hover:border-rose-300 hover:bg-rose-50 transition-colors">
-                                <summary class="cursor-pointer outline-none flex justify-between items-center p-3 text-sm font-medium text-rose-800">
-                                    <span class="flex items-center gap-2">
-                                        <i class="fa-solid fa-chevron-right text-xs text-rose-400 group-open:rotate-90 transition-transform"></i>
-                                        ${faskes}
-                                    </span>
-                                    <span class="font-bold text-rose-600 bg-white border border-rose-100 px-2 py-0.5 rounded text-xs shadow-sm">${data.total}</span>
-                                </summary>
-                                <div class="px-3 pb-3 pt-1 text-[11px] text-gray-700">
-                                    <div class="bg-white p-2 rounded border border-rose-100 space-y-1 shadow-sm">
-                                        <div class="font-bold text-rose-800 border-b border-rose-100 pb-1 mb-1">Rincian Jenis Tenaga</div>
-                                        ${Object.entries(data.profesi).sort((a,b) => b[1] - a[1]).map(([prof, count]) => 
-                                            `<div class="flex justify-between items-center">
-                                                <span>${prof}</span>
-                                                <span class="font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded">${count}</span>
-                                            </div>`
-                                        ).join('')}
-                                    </div>
-                                </div>
-                            </details>
-                        `;
-                    });
-                }
+            // Render Penugasan Khusus
+            const penugasanKhususContainer = document.getElementById('stats-penugasan-khusus-container');
+            if (penugasanKhususContainer) {
+                penugasanKhususContainer.innerHTML = '';
+                Object.entries(penugasanKhususStats).sort((a,b) => b[1].total - a[1].total).forEach(([title, data]) => {
+                    penugasanKhususContainer.innerHTML += generateDetailHTML(title, data, true);
+                });
             }
         }
 
